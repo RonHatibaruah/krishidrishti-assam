@@ -1,14 +1,14 @@
 {
-  "name": "jaldrishti-assam",
+  "name": "krishidrishti-assam",
   "private": true,
   "version": "1.0.0",
-  "description": "JalDrishti (জলদৃষ্টি) - Space-Enabled Digital Twin for Flood Simulation & Early Warning for ASSAC & ASDMA (NESFIC-D-18)",
+  "description": "KrishiDrishti (কৃষি-দৃষ্টি) - Agricultural Commodity Price Intelligence & Forecasting for Farmer Decisions (NESFIC-D-35)",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "pages:build": "npm run build",
-    "deploy": "wrangler pages deploy dist --project-name=jaldrishti-assam",
+    "deploy": "wrangler pages deploy dist --project-name=krishidrishti-assam",
     "preview": "vite preview"
   },
   "dependencies": {

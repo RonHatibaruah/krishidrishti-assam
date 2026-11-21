@@ -1,8 +1,8 @@
-name = "jaldrishti-assam"
+name = "krishidrishti-assam"
 compatibility_date = "2024-11-21"
 pages_build_output_dir = "dist"
 
 [vars]
 ENVIRONMENT = "production"
 STATE_CODE = "IN-AS"
-SYSTEM_NAME = "JalDrishti - Assam Flood & Space Digital Twin Sentinel"
+SYSTEM_NAME = "KrishiDrishti - Assam Agricultural Commodity Price Intelligence Sentinel"

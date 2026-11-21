@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 Generate clean, copy-paste-ready, textarea-compliant plain text files for NESFIC 2026:
-1. NESFIC_D18_Proposal_Ron_Hatibaruah.txt (Field-by-field copy-paste textarea blocks)
-2. NESFIC_D18_Proof_of_Work_Ron_Hatibaruah.txt (Full and modular copy-paste textarea blocks)
+1. NESFIC_D35_Proposal_Ron_Hatibaruah.txt (Field-by-field copy-paste textarea blocks)
+2. NESFIC_D35_Proof_of_Work_Ron_Hatibaruah.txt (Full and modular copy-paste textarea blocks)
 """
 
 import os
@@ -48,44 +48,45 @@ def clean_text_for_textarea(text):
     # Clean latex math
     t = re.sub(r'\$([^$]+)\$', r'\1', t)
     
-    # Standardize dashes
-    t = t.replace('—', ' - ').replace('–', '-')
+    # Standardize bullet symbols
+    t = re.sub(r'^[ \t]*[-*][ \t]+', '• ', t, flags=re.MULTILINE)
     
-    # Clean up double blank lines
+    # Clean up excessive blank lines
     t = re.sub(r'\n{3,}', '\n\n', t)
     
     return t.strip()
 
 def generate_proposal_text():
     src_file = os.path.join(base_dir, 'proposal_contents.md')
-    out_file = os.path.join(base_dir, 'NESFIC_D18_Proposal_Ron_Hatibaruah.txt')
+    out_file = os.path.join(base_dir, 'NESFIC_D35_Proposal_Ron_Hatibaruah.txt')
     
     with open(src_file, 'r', encoding='utf-8') as f:
         raw = f.read()
         
-    # Split by Field
-    sections = re.split(r'##\s+Field\s+(\d+):', raw)
-    
+    # Extract header info
     header = "=" * 80 + "\n"
-    header += "NESFIC 2026 - STREAM 1 (GOVERNMENT TRACK) - OFFICIAL PROPOSAL TEXT\n"
-    header += "Problem Statement ID: NESFIC-D-18: Digital Twin for Flood Management, Simulation and Early Warning\n"
-    header += "Sponsoring Department: Department of Science & Technology (ASSAC) & ASDMA, Govt of Assam\n"
+    header += "NESFIC 2026 - STREAM 1 (GOVERNMENT TRACK) - UNIFORM SOLUTION PROPOSAL (USPR)\n"
+    header += "Problem Statement ID: NESFIC-D-35: Agricultural Commodity Price Intelligence and Forecasting\n"
+    header += "Sponsoring Department: Department of Agriculture ● Government of Assam\n"
+    header += "Technical Partners: ASAMB (Assam Agricultural Marketing Board) & AAU Jorhat AMIU\n"
     header += "Applicant / Innovator: Ron Hatibaruah\n"
-    header += "Solution: JalDrishti (Assam Flood & Space Digital Twin Sentinel)\n"
-    header += "Live Prototype: https://jaldrishti-assam.pages.dev/\n"
-    header += "GitHub Repository: https://github.com/RonHatibaruah/jaldrishti-assam\n"
+    header += "Solution: KrishiDrishti (Assam Agri-Price Sentinel)\n"
+    header += "Live Prototype: https://krishidrishti-assam.pages.dev/\n"
+    header += "GitHub Repository: https://github.com/RonHatibaruah/krishidrishti-assam\n"
     header += "=" * 80 + "\n\n"
     
-    field_texts = []
+    # Split into fields
+    field_pattern = r'## (Field \d+:.*?)(?=\n## Field |\Z)'
+    fields = re.findall(field_pattern, raw, flags=re.DOTALL)
     
-    # Loop over fields
-    for i in range(1, len(sections), 2):
-        field_num = sections[i]
-        field_body = sections[i+1]
+    field_texts = []
+    for f in fields:
+        lines = f.strip().split('\n')
+        field_header = lines[0].strip()
+        field_num_match = re.search(r'Field (\d+)', field_header)
+        field_num = field_num_match.group(1) if field_num_match else "?"
         
-        # Get field title from first line of body
-        first_line = field_body.strip().split('\n')[0]
-        field_title = f"FIELD {field_num}: {first_line}"
+        field_body = '\n'.join(lines[1:]).strip()
         
         # Word limit info
         limit_match = re.search(r'Limit:\s*(\d+)\s*words', field_body)
@@ -111,19 +112,20 @@ def generate_proposal_text():
 
 def generate_pow_text():
     src_file = os.path.join(base_dir, 'proof_of_work_dossier.md')
-    out_file = os.path.join(base_dir, 'NESFIC_D18_Proof_of_Work_Ron_Hatibaruah.txt')
+    out_file = os.path.join(base_dir, 'NESFIC_D35_Proof_of_Work_Ron_Hatibaruah.txt')
     
     with open(src_file, 'r', encoding='utf-8') as f:
         raw = f.read()
         
     header = "=" * 80 + "\n"
     header += "NESFIC 2026 - STREAM 1 - PROOF OF WORK & TECHNICAL EVIDENCE DOSSIER\n"
-    header += "Problem Statement ID: NESFIC-D-18: Digital Twin for Flood Management, Simulation and Early Warning\n"
-    header += "Sponsoring Department: Department of Science & Technology (ASSAC) & ASDMA, Govt of Assam\n"
+    header += "Problem Statement ID: NESFIC-D-35: Agricultural Commodity Price Intelligence and Forecasting\n"
+    header += "Sponsoring Department: Department of Agriculture ● Government of Assam\n"
+    header += "Technical Partners: ASAMB & AAU Jorhat AMIU\n"
     header += "Applicant / Innovator: Ron Hatibaruah\n"
-    header += "Solution: JalDrishti (Assam Flood Sentinel)\n"
-    header += "Live Prototype: https://jaldrishti-assam.pages.dev/\n"
-    header += "GitHub Repository: https://github.com/RonHatibaruah/jaldrishti-assam\n"
+    header += "Solution: KrishiDrishti (Assam Agri-Price Sentinel)\n"
+    header += "Live Prototype: https://krishidrishti-assam.pages.dev/\n"
+    header += "GitHub Repository: https://github.com/RonHatibaruah/krishidrishti-assam\n"
     header += "=" * 80 + "\n\n"
     
     cleaned = clean_text_for_textarea(raw)

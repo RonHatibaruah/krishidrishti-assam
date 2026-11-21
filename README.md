@@ -1,59 +1,64 @@
-# JalDrishti • জলদৃষ্টি (Assam Flood Sentinel)
-### Space-Enabled 4D Digital Twin Platform for Flood Management, Hydrodynamic Simulation & Early Warning
-**Department of Science & Technology ● Government of Assam – ASSAC & ASDMA**
+# KrishiDrishti • কৃষি-দৃষ্টি (Assam Agri-Price Sentinel)
+### AI-Powered Multi-Horizon Commodity Price Intelligence, Mandi Arbitrage & Farmer Decision Platform
+**Department of Agriculture ● Government of Assam – ASAMB & AAU Jorhat AMIU**
 
-[![Live Demo](https://img.shields.io/badge/Live_Prototype-jaldrishti--assam.pages.dev-0284c7?style=for-the-badge&logo=cloudflarepages)](https://jaldrishti-assam.pages.dev/)
-[![Government of Assam](https://img.shields.io/badge/Government_of_Assam-Science_%26_Technology-065f46?style=for-the-badge)](https://dst.assam.gov.in/)
-[![Challenge ID](https://img.shields.io/badge/NESFIC_2026-Stream_1_--_NESFIC--D--18-0284c7?style=for-the-badge)](https://startup.assam.gov.in/nesfic26/problem-statements/nesfic-d-18)
-[![ASSAC & ASDMA](https://img.shields.io/badge/Challenge_Owners-ASSAC_%7C_ASDMA-0f766e?style=for-the-badge)](https://asdma.assam.gov.in/)
+[![Live Demo](https://img.shields.io/badge/Live_Prototype-krishidrishti--assam.pages.dev-059669?style=for-the-badge&logo=cloudflarepages)](https://krishidrishti-assam.pages.dev/)
+[![Government of Assam](https://img.shields.io/badge/Government_of_Assam-Department_of_Agriculture-065f46?style=for-the-badge)](https://agri-horti.assam.gov.in/)
+[![Challenge ID](https://img.shields.io/badge/NESFIC_2026-Stream_1_--_NESFIC--D--35-0284c7?style=for-the-badge)](https://startup.assam.gov.in/nesfic26/problem-statements/nesfic-d-35)
+[![ASAMB & AAU Jorhat](https://img.shields.io/badge/Challenge_Owners-ASAMB_%7C_AAU_Jorhat_AMIU-0f766e?style=for-the-badge)](https://asamb.assam.gov.in/)
 [![React 18](https://img.shields.io/badge/Frontend-React_18_%7C_TypeScript_%7C_Tailwind-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![Leaflet GIS](https://img.shields.io/badge/Geospatial-Leaflet_%7C_PostGIS-199900?style=for-the-badge&logo=leaflet)](https://leafletjs.com/)
 
-> 🌐 **Live Working Prototype:** **[https://jaldrishti-assam.pages.dev/](https://jaldrishti-assam.pages.dev/)**  
-> Explore the 4D Geospatial Digital Twin Map, "What-If" Hydrodynamic Simulation Sandbox, Embankment Health Sentinel (BHI), Common Alerting Protocol (CAP) Bilingual Warning Console, and ASDC Governance Enclave.
+> 🌐 **Live Working Prototype:** **[https://krishidrishti-assam.pages.dev/](https://krishidrishti-assam.pages.dev/)**  
+> Explore the Multi-Horizon AI Price Forecaster (TFT), "Hold vs. Sell vs. Route" Arbitrage Sandbox, Assam Statewide Mandi WebGIS, Cold Storage & e-NWR Credit Calculator, and Bilingual WhatsApp / SMS Advisory Dispatcher.
 >
-> ⚡ **Demo State Command Access:** `admin@assac.assam.gov.in` / `dispur2026`  
-> 💻 **GitHub Repository:** [https://github.com/RonHatibaruah/jaldrishti-assam](https://github.com/RonHatibaruah/jaldrishti-assam)
+> ⚡ **Demo State Command Access:** `admin@agri.assam.gov.in` / `dispur2026`  
+> 💻 **GitHub Repository:** [https://github.com/RonHatibaruah/krishidrishti-assam](https://github.com/RonHatibaruah/krishidrishti-assam)
 
 ---
 
 ## 🏛️ Executive Summary
 
-**JalDrishti (জলদৃষ্টি)** is an enterprise, space-enabled 4D Digital Twin and hydro-informatics decision-support platform engineered specifically for the **Assam State Space Applications Centre (ASSAC)** and the **Assam State Disaster Management Authority (ASDMA)** under **NESFIC-D-18 (Stream 1 — Government Track: Department of Science & Technology)**.
+**KrishiDrishti (কৃষি-দৃষ্টি)** is an enterprise, AI-powered agricultural commodity market intelligence, multi-horizon price forecasting, and farmer decision-support platform engineered specifically for the **Department of Agriculture, Government of Assam**, in synergy with the **Assam State Agricultural Marketing Board (ASAMB)** and the **Agricultural Market Intelligence Unit (AMIU) at Assam Agricultural University (AAU), Jorhat**, under **NESFIC-D-35 (Stream 1 — Government Department Track)**.
 
-Assam endures one of the most severe recurring flood and river erosion crises in South Asia, with over 40% of the state's geographical area (~3.15 million hectares) classified as flood-prone. Every monsoon season, 3–4 waves of catastrophic flooding across the Brahmaputra and Barak river basins impact over 30 districts, displacing 3 to 5 million citizens and inflicting acute socio-economic devastation. 
+Over 70% of Assam's population depends on agriculture, with smallholder and marginal farmers (<2 hectares) constituting over 85% of operational landholdings. Despite producing high-demand staples (Sali, Boro, and indigenous aromatic Joha rice), oilseeds (Mustard/Rapeseed), and premium horticultural produce (GI-tagged Kaji Nemu, Karbi Anglong organic Ginger, Bhoot Jolokia, and winter vegetables in Kharupetia and Barpeta), farmers suffer severe economic losses during peak harvest gluts:
+- **Price Volatility & Distress Sales:** Heavy localized market arrivals crash wholesale prices 40%–60% below production costs or statutory Minimum Support Prices (MSP).
+- **Asymmetric Intermediary Power:** A pervasive multi-layered middleman (*Farias / Dalals*) ecosystem extracts value while farmers lack visibility into regional mandi wholesale rates.
+- **Absence of Actionable Guidance:** Smallholders lack predictive models to determine whether holding produce for 12 days in a local warehouse or transporting it to Guwahati or Silchar yields a net profit after logistics costs.
 
-**JalDrishti addresses all statutory requirements specified in the official NESFIC-D-18 challenge description:**
+**KrishiDrishti directly addresses all statutory requirements specified in the official NESFIC-D-35 challenge:**
 
-1. **Space Remote Sensing & All-Weather SAR Fusion:** Ingests Copernicus Sentinel-1 dual-polarization (VV+VH) Synthetic Aperture Radar (SAR) data, applying adaptive Otsu binarization to extract live, all-weather water extents through dense monsoon cloud cover in <45 minutes of satellite pass.
-2. **Mandatory Three-Tier Data Provenance Segregation:** Directly fulfills ASSAC’s explicit statutory mandate by algorithmically and visually segregating every spatial layer into **[OBSERVED]** ground truth (radar/gauges), **[FORECAST]** numerical weather outputs (IMD WRF 3km), and **[SIMULATED]** hydrodynamic breach wavefronts with explicit 95% confidence intervals.
-3. **2D Hydrodynamic & Physics-Informed AI Surrogate Engine:** Solves 2D depth-averaged Saint-Venant shallow water equations accelerated by Physics-Informed Neural Networks (PINNs), reducing 48-hour basin flood propagation runtimes from 4+ hours to **under 39 seconds** on state GPU nodes.
-4. **Interactive "What-If" Scenario Simulation Sandbox:** Enables emergency planners to dynamically simulate complex contingencies—such as a 250 mm 24h rainfall event combined with a Kurichhu hydel dam spill and an earthen levee breach—projecting sub-minute flood wavefronts and safe evacuation corridors.
-5. **Embankment Health Sentinel & Breach Hazard Index ($BHI$):** Monitors over 4,400 km of digitized state dykes, continuously computing real-time hydraulic head differentials, radar soil moisture saturation, and structural vintage to pre-emptively flag breach risks.
-6. **Critical Infrastructure & Population Exposure Engine:** Intersects dynamic flood polygons with digitized highways (NH-27, NH-15), railway lines, schools, electrical substations, and relief shelters to compute population-at-risk metrics and optimize relief dispatch corridors.
-7. **CAP-Compliant Bilingual Early Warning Engine:** Integrated with NDMA Sachet (OASIS CAP v1.2), automatically dispatching localized, bilingual early warnings in **Assamese (অসমীয়া)** and **English** via Cell Broadcast, bulk SMS, and WhatsApp with 12–36 hours of actionable lead time.
+1. **Multi-Source Market Telemetry Ingestion:** Ingests live wholesale prices and daily arrival volumes from Agmarknet API, e-NAM mandis, ASAMB market committees, and AAU Jorhat AMIU field reports.
+2. **Earth Observation & Climate Fusion:** Integrates Copernicus Sentinel-2 multispectral imagery (10m resolution) tracking district-level Normalized Difference Vegetation Index (NDVI) to detect localized harvest timing surges 3–4 weeks prior to market arrival, fused with IMD weather station telemetry.
+3. **Multi-Horizon Temporal Fusion Transformer (TFT) AI Engine:** Deploys deep transformer sequence architectures outputting explicit quantile uncertainty bounds ($P_{10}$ downside floor, $P_{50}$ median expected, $P_{90}$ upside peak) across 7-day tactical, 30-day storage, and 90-day pre-sowing horizons with an industry-leading **validation MAPE under 5.75%**.
+4. **"Hold vs. Sell vs. Route" Arbitrage Sandbox:** Formulates and computes the Net Realizable Value ($NRV$) per quintal:
+   $$NRV = P_{\text{dest}} \cdot (1 - \delta_{\text{shrinkage}} \cdot \Delta t) - \text{Freight} - \text{Mandi Cess} - \text{Handling}$$
+   Empowering FPOs to calculate distance-weighted truck freight, road travel hours, transit shrinkage, and net profit before dispatching produce.
+5. **Cold Storage & e-NWR Warehouse Economics Hub:** Digitally indexes cold storages and WDRA warehouses across Assam, computing storage holding ROI and connecting farmers to subsidized **7% p.a. electronic Negotiable Warehouse Receipt (e-NWR) pledge credit** (up to 75% of commodity valuation), saving farmers from 36% p.a. informal debt traps.
+6. **Statewide Distress Sale & MSP Procurement Radar:** Continuously monitors wholesale clearing prices against statutory MSPs, triggering executive alerts to the Directorate of Agriculture and ASAMB when prices breach safety floors.
+7. **Zero-Friction Multilingual Advisory Engine:** Dispatches automated natural language advisories in **Assamese (অসমীয়া)** and English via Meta WhatsApp Cloud API, C-DAC bulk SMS, and voice IVRS.
 
 ---
 
 ## 📸 Architectural Visualizations & Evidentiary Diagrams
 
-### 1. Paradigm Shift: Reactive Flood Relief to Space 4D Digital Twin
+### 1. Paradigm Shift: Reactive Distress Liquidation to AI Price Intelligence
 ![Paradigm Shift](assets/proposal_images/diagram_1_before_after_workflow.jpg)
 
 ### 2. ASDC Enterprise System Architecture & Telemetry Pipeline
 ![System Architecture](assets/proposal_images/diagram_2_cadastral_reconciliation_flow.jpg)
 
-### 3. Mandatory Three-Tier Data Provenance & Uncertainty Architecture
+### 3. Multi-Horizon Temporal Fusion Transformer (TFT) & Quantile Forecasting Architecture
 ![Data Provenance](assets/proposal_images/diagram_3_cadastral_anomaly_catalog.jpg)
 
-### 4. Embankment Health Sentinel & Breach Hazard Index (BHI) Engine
-![Embankment Sentinel](assets/proposal_images/diagram_4_blockchain_land_registry.jpg)
+### 4. Spatial Mandi Arbitrage & Net Realizable Value (NRV) Logistics Engine
+![Spatial Arbitrage](assets/proposal_images/diagram_4_blockchain_land_registry.jpg)
 
-### 5. 2D Hydrodynamic Physics & PINN Surrogate Benchmarks
-![PINN Hydrodynamics](assets/proposal_images/diagram_5_lat_mandal_mobile_app.jpg)
+### 5. Multilingual Farmer Advisory Engine & Mobile / WhatsApp Interface
+![Farmer Interface](assets/proposal_images/diagram_5_lat_mandal_mobile_app.jpg)
 
-### 6. Common Alerting Protocol (CAP) Multi-Channel Bilingual Dissemination
-![CAP Dissemination](assets/proposal_images/diagram_6_spatial_conflict_resolution.jpg)
+### 6. Cold Storage Optimization & e-NWR Collateral Warehouse Economics
+![Storage Economics](assets/proposal_images/diagram_6_spatial_conflict_resolution.jpg)
 
 ### 7. Phased 12-Month Implementation Roadmap & Milestone Budget Breakdown (₹40.00 Lakh)
 ![Roadmap and Budget](assets/proposal_images/diagram_7_enterprise_system_architecture.jpg)
@@ -62,12 +67,23 @@ Assam endures one of the most severe recurring flood and river erosion crises in
 
 ## 💻 Tech Stack & Infrastructure
 
-- **Web Frontend & Cockpits:** React 18, TypeScript, Tailwind CSS, Lucide Icons, Vite
-- **WebGIS Engine:** Leaflet 1.9.4, CartoDB Dark Matter / Positron vector tiles, GeoJSON spatial overlays
-- **Hydrodynamic Physics Core:** Python 3.11, PyTorch (Physics-Informed Neural Networks), 2D Saint-Venant finite-volume solvers
-- **Space Remote Sensing:** Copernicus Sentinel-1 C-SAR (GRD VV+VH), CartoDEM 10m mesh, GDAL, Rasterio, STAC API
-- **Dissemination Bus:** OASIS CAP v1.2 XML serializer, NDMA Sachet Gateway connector
+- **Web Frontend & Interactive Cockpits:** React 18, TypeScript, Tailwind CSS, Lucide Icons, Vite
+- **WebGIS Spatial Engine:** Leaflet 1.9.4, CartoDB Dark Matter vector tiles, PostGIS spatial geometries
+- **AI & Forecasting Core:** PyTorch Lightning 2.2, Temporal Fusion Transformers (TFT), Quantile Loss ($q \in \{0.10, 0.50, 0.90\}$), XGBoost, Scikit-learn
+- **Data & Earth Observation Pipeline:** Copernicus Sentinel-2 NDVI multispectral imagery (10m), Agmarknet API, e-NAM, IMD AWS weather telemetry
+- **Farmer Dissemination Bus:** Meta WhatsApp Business Cloud API, C-DAC Bulk SMS Gateway, Telecom Voice IVRS in Assamese & English
 - **Target Government Environment:** Assam State Data Centre (ASDC), Kubernetes (K8s), PostgreSQL 16 + PostGIS 3.4, Redis 7.2, DPDP Act 2023 compliance enclave
+
+---
+
+## 📑 Official NESFIC-D-35 Submission Files
+
+| File Name | Format | Description |
+|---|---|---|
+| **[NESFIC_D35_Proposal_Ron_Hatibaruah.pdf](NESFIC_D35_Proposal_Ron_Hatibaruah.pdf)** | PDF (3.0 MB) | Official 7-field proposal dossier complying with the 500-word limit per section. |
+| **[NESFIC_D35_Proof_of_Work_Ron_Hatibaruah.pdf](NESFIC_D35_Proof_of_Work_Ron_Hatibaruah.pdf)** | PDF (3.0 MB) | Technical evidence dossier with mathematical formulations, TFT benchmarks, and case studies. |
+| **[NESFIC_D35_Proposal_Ron_Hatibaruah.txt](NESFIC_D35_Proposal_Ron_Hatibaruah.txt)** | Plain Text | Clean copy-paste blocks for direct pasting into the Assam Startup application portal textareas. |
+| **[NESFIC_D35_Proof_of_Work_Ron_Hatibaruah.txt](NESFIC_D35_Proof_of_Work_Ron_Hatibaruah.txt)** | Plain Text | Clean plain-text copy of the Proof of Work dossier. |
 
 ---
 
@@ -76,13 +92,13 @@ Assam endures one of the most severe recurring flood and river erosion crises in
 ### Prerequisites
 - Node.js 18+ or 20+
 - npm or pnpm
-- Python 3.10+ (for PDF & Diagram generation scripts)
+- Python 3.10+ (for PDF and diagram generation scripts)
 
 ### Installation & Local Run
 ```bash
 # Clone the repository
-git clone https://github.com/RonHatibaruah/jaldrishti-assam.git
-cd jaldrishti-assam
+git clone https://github.com/RonHatibaruah/krishidrishti-assam.git
+cd krishidrishti-assam
 
 # Install frontend dependencies
 npm install
@@ -99,28 +115,22 @@ npm run build
 # Generate 16:9 Widescreen Infographics
 python3 generate_widescreen_diagrams.py
 
-# Generate Official Submission PDFs
+# Generate Submission PDFs & Text Copies
 python3 generate_pdfs.py
-
-# Generate Copy-Paste Textarea Versions
 python3 generate_text_versions.py
 ```
 
 ---
 
-## 📄 Submission Documents
+## 🏛️ Governance, Security & Data Sovereignty
 
-| Document | Format | Description |
-| :--- | :---: | :--- |
-| **[NESFIC_D18_Proposal_Ron_Hatibaruah.pdf](NESFIC_D18_Proposal_Ron_Hatibaruah.pdf)** | PDF (<10 MB) | Official USPR proposal covering all 5 submission fields with embedded diagrams |
-| **[NESFIC_D18_Proof_of_Work_Ron_Hatibaruah.pdf](NESFIC_D18_Proof_of_Work_Ron_Hatibaruah.pdf)** | PDF (<10 MB) | Technical proof of work, SAR benchmarks, PINN performance, and BHI equations |
-| **[NESFIC_D18_Proposal_Ron_Hatibaruah.txt](NESFIC_D18_Proposal_Ron_Hatibaruah.txt)** | Plain Text | Formatted, word-count verified text blocks for portal `<textarea>` fields |
-| **[NESFIC_D18_Proof_of_Work_Ron_Hatibaruah.txt](NESFIC_D18_Proof_of_Work_Ron_Hatibaruah.txt)** | Plain Text | Complete plain text evidentiary dossier |
+- **Assam State Data Centre (ASDC):** All telemetry, predictive weights, and farmer transaction profiles reside strictly within state infrastructure in Guwahati.
+- **DPDP Act 2023 Compliance:** Smallholder mobile numbers and geolocation coordinates are stored as irreversible cryptographic hashes ($SHA\text{-}256$), ensuring zero personally identifiable data leaks.
+- **Auditability:** Every administrative market intervention directive and MSP procurement order generates an immutable SHA-256 block record linked to the previous transaction hash.
 
 ---
 
-## ⚖️ Governance, Privacy & Open Standards
-- **Data Residency:** 100% In-State (Assam State Data Centre, Dispur)
-- **Compliance:** Digital Personal Data Protection (DPDP) Act 2023 compliant
-- **Open Standards:** Open Geospatial Consortium (OGC) WMS, WFS, GeoJSON, and OASIS CAP v1.2 interoperability
-- **License:** Open Source GovTech under MIT / Digital Public Good (DPG) principles
+**Lead Innovator & Systems Architect:**  
+**Ron Hatibaruah**  
+*Applicant for NESFIC 2026 (Stream 1 — Government Department Track: Department of Agriculture)*  
+*Department of Agriculture ● Government of Assam*

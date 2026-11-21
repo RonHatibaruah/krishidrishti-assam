@@ -1,5 +1,5 @@
 import React from 'react';
-import { Waves, ShieldCheck, Database, Satellite, ExternalLink } from 'lucide-react';
+import { Wheat, ShieldCheck, Database, Satellite, AlertCircle } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
@@ -9,17 +9,17 @@ export const Footer: React.FC = () => {
           {/* Brand Info */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-cyan-600 rounded-lg text-white">
-                <Waves className="w-4 h-4" />
+              <div className="p-1.5 bg-emerald-600 rounded-lg text-white">
+                <Wheat className="w-4 h-4" />
               </div>
-              <span className="font-bold text-white text-sm">JalDrishti (জলদৃষ্টি)</span>
+              <span className="font-bold text-white text-sm">KrishiDrishti (কৃষি-দৃষ্টি)</span>
             </div>
             <p className="text-slate-400 text-[11px] leading-relaxed">
-              Space-Enabled 4D Digital Twin Platform for Flood Management, Hydrodynamic Simulation and Early Warning for the Government of Assam.
+              AI-Powered Agricultural Commodity Price Intelligence, Multi-Horizon Forecasting and Farmer Decision Platform for the Government of Assam.
             </p>
-            <div className="flex items-center gap-1.5 text-[10px] text-cyan-400 font-mono">
+            <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-mono">
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>NESFIC-D-18 Stream 1 • Government Track</span>
+              <span>NESFIC-D-35 Stream 1 • Government Track</span>
             </div>
           </div>
 
@@ -27,10 +27,10 @@ export const Footer: React.FC = () => {
           <div>
             <h4 className="font-semibold text-slate-200 mb-2 text-xs uppercase tracking-wider">Challenge Owners</h4>
             <ul className="space-y-1.5 text-[11px] text-slate-400">
-              <li>Assam State Space Applications Centre (ASSAC)</li>
-              <li>Dept. of Science & Technology, Govt. of Assam</li>
-              <li>Assam State Disaster Management Authority (ASDMA)</li>
-              <li>Water Resources Department (WRD Assam)</li>
+              <li>Department of Agriculture, Government of Assam</li>
+              <li>Assam State Agricultural Marketing Board (ASAMB)</li>
+              <li>Agricultural Market Intelligence Unit (AMIU) - AAU Jorhat</li>
+              <li>Assam Agribusiness and Rural Transformation Project (APART)</li>
             </ul>
           </div>
 
@@ -39,44 +39,57 @@ export const Footer: React.FC = () => {
             <h4 className="font-semibold text-slate-200 mb-2 text-xs uppercase tracking-wider">Data Ingestion Partners</h4>
             <ul className="space-y-1.5 text-[11px] text-slate-400">
               <li className="flex items-center gap-1.5">
+                <Database className="w-3 h-3 text-emerald-400" />
+                <span>Agmarknet & e-NAM Mandi Transformed Feeds</span>
+              </li>
+              <li className="flex items-center gap-1.5">
                 <Satellite className="w-3 h-3 text-cyan-400" />
-                <span>ISRO Bhuvan & Copernicus Sentinel-1 C-SAR</span>
+                <span>Copernicus Sentinel-2 Crop NDVI Phenology</span>
               </li>
               <li className="flex items-center gap-1.5">
                 <Database className="w-3 h-3 text-blue-400" />
-                <span>Central Water Commission (CWC) Telemetry</span>
+                <span>IMD Automatic Weather Station (AWS) Grids</span>
               </li>
               <li className="flex items-center gap-1.5">
-                <Database className="w-3 h-3 text-indigo-400" />
-                <span>IMD AWS Precipitation & Radar Grids</span>
-              </li>
-              <li className="flex items-center gap-1.5">
-                <Database className="w-3 h-3 text-emerald-400" />
-                <span>Survey of India & CartoDEM 10m Mesh</span>
+                <Database className="w-3 h-3 text-purple-400" />
+                <span>WDRA Certified Cold Storage & e-NWR Registries</span>
               </li>
             </ul>
           </div>
 
           {/* Statutory Mandate Notice */}
-          <div className="bg-slate-900/80 p-3 rounded-lg border border-slate-800">
-            <h4 className="font-semibold text-cyan-300 text-xs mb-1.5 flex items-center gap-1">
-              <span>Statutory Provenance Notice</span>
-            </h4>
-            <p className="text-[10px] text-slate-400 leading-normal">
-              In accordance with ASSAC directives, all spatial layers strictly segregate <span className="text-emerald-400 font-semibold">[OBSERVED]</span> ground-truth, <span className="text-amber-400 font-semibold">[FORECAST]</span> numerical weather outputs, and <span className="text-purple-400 font-semibold">[SIMULATED]</span> 2D hydrodynamic breach footprints.
+          <div>
+            <h4 className="font-semibold text-slate-200 mb-2 text-xs uppercase tracking-wider">Regulatory Compliance</h4>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Engineered for deployment within the secure Assam State Data Centre (ASDC). Strictly compliant with the Digital Personal Data Protection (DPDP) Act 2023 with SHA-256 pseudonymized farmer telemetry.
             </p>
+            <div className="mt-3 text-[11px] text-emerald-400 font-mono">
+              Built for North-East Seva First Innovation Challenge (NESFIC 2026)
+            </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-slate-800/80 pt-4 flex flex-wrap justify-between items-center gap-3 text-[11px] text-slate-400">
+        {/* Prominent Statutory & Operational Disclaimer Box */}
+        <div className="mb-6 p-4 rounded-xl bg-slate-900/90 border border-slate-800 text-[11px] text-slate-300 leading-relaxed">
+          <div className="flex items-center gap-2 text-amber-400 font-semibold mb-1.5">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span className="uppercase tracking-wider text-[10px]">Official Prototype & Technology Demonstration Disclaimer</span>
+          </div>
+          <p>
+            <strong>KrishiDrishti (কৃষি-দৃষ্টি)</strong> is a verified working prototype and technical proposal developed by <strong>Ron Hatibaruah</strong> for the <strong>North-East Seva First Innovation Challenge (NESFIC 2026)</strong> under the Government of Assam, Department of Agriculture (Problem Statement ID: <code>NESFIC-D-35</code>). Price forecasting trajectories, quantile uncertainty bounds ($P_{10}, P_{50}, P_{90}$), and spatial mandi arbitrage calculations are simulated and benchmarked using deep learning sequence neural networks (Temporal Fusion Transformers) trained on historical Agmarknet, e-NAM, and AAU Jorhat AMIU datasets. Commercial procurement directives, statutory MSP enforcement, and e-NWR warehouse pledge loans are subject to administrative ratification by the Assam State Agricultural Marketing Board (ASAMB) and participating financial institutions.
+          </p>
+        </div>
+
+        <div className="pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500">
           <div>
-            © 2026 Government of Assam • North East Seva First Innovation Challenge (NESFIC 2026)
+            &copy; 2026 Department of Agriculture, Government of Assam. Developed by <strong>Ron Hatibaruah</strong> (Lead Innovator & AI Systems Architect).
           </div>
           <div className="flex items-center gap-4">
-            <span className="font-mono text-[10px] text-slate-400">Deployed at Assam State Data Centre (ASDC)</span>
-            <span className="text-slate-500">•</span>
-            <span className="text-cyan-400 font-medium">DPDPA 2023 Compliant</span>
+            <span className="hover:text-slate-300">Privacy Policy (DPDP 2023)</span>
+            <span>•</span>
+            <span className="hover:text-slate-300">ASAMB Open Data Portal</span>
+            <span>•</span>
+            <span className="hover:text-slate-300">ASDC Enclave SLA</span>
           </div>
         </div>
       </div>

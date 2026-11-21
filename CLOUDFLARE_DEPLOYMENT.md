@@ -1,56 +1,35 @@
-# Cloudflare Pages Deployment Guide: JalDrishti (Assam Flood Sentinel)
+# Cloudflare Pages Deployment Guide: KrishiDrishti (Assam Agri-Price Sentinel)
+## NESFIC-D-35 • Government Track: Department of Agriculture
 
-**Project Name:** `jaldrishti-assam`  
-**Problem Statement:** NESFIC-D-18 (Stream 1 — Government Track: Department of Science & Technology)  
-**Target Domain:** `https://jaldrishti-assam.pages.dev/`  
-**GitHub Repository:** `https://github.com/RonHatibaruah/jaldrishti-assam`  
+This project is configured for one-command deployment to **Cloudflare Pages** via Wrangler CLI.
 
----
-
-## 🚀 Deployment Options
-
-### Option 1: Direct GitHub Integration via Cloudflare Dashboard (Recommended)
-
-1. Log into your [Cloudflare Dashboard](https://dash.cloudflare.com/).
-2. In the left navigation menu, navigate to **Workers & Pages** ➔ **Create application** ➔ select the **Pages** tab.
-3. Click **Connect to Git** and choose **GitHub**.
-4. Select the repository: `RonHatibaruah/jaldrishti-assam`.
-5. In **Set up builds and deployments**, configure:
-   - **Project name:** `jaldrishti-assam`
-   - **Production branch:** `main`
-   - **Framework preset:** `Vite`
-   - **Build command:** `npm run build`
-   - **Build output directory:** `dist`
-   - **Root directory:** *(leave blank / default)*
-6. In **Environment variables (advanced)**, configure:
-   - `NODE_VERSION` = `20.18.0`
-7. Click **Save and Deploy**. Cloudflare Pages will build and deploy your application to `https://jaldrishti-assam.pages.dev/`. Every future push to `main` will automatically trigger a zero-downtime deployment!
+### 🌐 Live Production Target
+- **Live URL:** `https://krishidrishti-assam.pages.dev/`
+- **Project Name:** `krishidrishti-assam`
+- **Build Output Directory:** `dist`
+- **Framework Preset:** Vite / React
 
 ---
 
-### Option 2: Command Line Deployment via Wrangler CLI
+### 🚀 Deployment Instructions
 
-You can also deploy directly from your local terminal:
-
+#### 1. Build the Production Bundle
+Ensure the bundle builds cleanly with TypeScript validation:
 ```bash
-# 1. Build production assets
 npm run build
-
-# 2. Deploy directly to Cloudflare Pages
-npx wrangler pages deploy dist --project-name=jaldrishti-assam
 ```
 
-If prompted to log in:
+#### 2. Deploy via Wrangler CLI
+Deploy the `dist/` directory directly to Cloudflare Pages:
 ```bash
-npx wrangler login
+npx wrangler pages deploy dist --project-name=krishidrishti-assam
 ```
 
-Or deploy non-interactively using your Cloudflare API token:
-```bash
-CLOUDFLARE_API_TOKEN="your_token" CLOUDFLARE_ACCOUNT_ID="your_account_id" npx wrangler pages deploy dist --project-name=jaldrishti-assam
-```
-
----
-
-## ⚙️ Edge Functions (`/functions/api/health.ts`)
-The project includes a serverless Cloudflare Pages Edge Function returning real-time health telemetry at `/api/health`.
+#### 3. Continuous Deployment (Git Integration)
+If connected to a GitHub repository (`https://github.com/RonHatibaruah/krishidrishti-assam`):
+- **Build Command:** `npm run build`
+- **Build Output Directory:** `dist`
+- **Node.js Version:** `20`
+- **Environment Variables:**
+  - `STATE_CODE`: `IN-AS`
+  - `SYSTEM_NAME`: `KrishiDrishti - Assam Agricultural Commodity Price Intelligence Sentinel`

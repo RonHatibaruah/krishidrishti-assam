@@ -1,322 +1,291 @@
 import React from 'react';
 import { 
-  Waves, 
-  AlertTriangle, 
-  ShieldAlert, 
   TrendingUp, 
   TrendingDown, 
-  MapPin, 
-  Users, 
-  Home, 
-  ArrowUpRight, 
-  CheckCircle2, 
-  Layers, 
-  Radio,
-  Clock,
-  Sparkles
+  AlertTriangle, 
+  ShieldCheck, 
+  ArrowRight, 
+  Wheat, 
+  Warehouse, 
+  MessageSquare, 
+  Zap, 
+  Sparkles,
+  DollarSign,
+  Activity
 } from 'lucide-react';
-import { ASSAM_RIVER_STATIONS, DISTRICT_SUMMARIES, CAP_ACTIVE_ALERTS } from '../data/assam_flood_data';
+import { ASSAM_COMMODITIES, MOCK_ALERTS, ASSAM_MANDIS } from '../data/agri_price_data';
+import { Commodity } from '../types/agri';
 
 interface ExecutiveCommandProps {
-  onNavigateToMap: () => void;
-  onNavigateToSimulation: () => void;
-  onNavigateToAlerts: () => void;
+  onSelectCommodity: (commodityId: string) => void;
+  onNavigateTab: (tabName: string) => void;
 }
 
 export const ExecutiveCommand: React.FC<ExecutiveCommandProps> = ({
-  onNavigateToMap,
-  onNavigateToSimulation,
-  onNavigateToAlerts
+  onSelectCommodity,
+  onNavigateTab
 }) => {
-  const totalSubmergedArea = DISTRICT_SUMMARIES.reduce((acc, d) => acc + d.submergedAreaSqKm, 0);
-  const totalAffectedPop = DISTRICT_SUMMARIES.reduce((acc, d) => acc + d.affectedPopulation, 0);
-  const totalCamps = DISTRICT_SUMMARIES.reduce((acc, d) => acc + d.activeReliefCamps, 0);
-  const totalInmates = DISTRICT_SUMMARIES.reduce((acc, d) => acc + d.inmatesCount, 0);
-  const criticalStations = ASSAM_RIVER_STATIONS.filter(s => s.status === 'ABOVE_DANGER_LEVEL').length;
+  const mspDeficitCrops = ASSAM_COMMODITIES.filter(
+    c => c.mspPerQuintal && c.currentModalPrice < c.mspPerQuintal
+  );
 
   return (
     <div className="space-y-6">
-      {/* Three-Tier Provenance Segregation Notice (Mandated by ASSAC) */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-slate-700/80 rounded-xl p-4 shadow-lg">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-2 pb-2 border-b border-slate-800">
-          <div className="flex items-center gap-2">
-            <span className="p-1 bg-cyan-500/20 text-cyan-400 rounded-md">
-              <Layers className="w-4 h-4" />
-            </span>
-            <span className="text-xs font-bold text-white uppercase tracking-wider">
-              ASSAC Mandated Data Provenance Segregation
-            </span>
-          </div>
-          <span className="text-[11px] text-slate-400 font-mono">
-            Telemetry Synced: Today 16:50 IST (ASDC)
-          </span>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-          <div className="bg-slate-950/70 p-2.5 rounded-lg border border-emerald-800/40 flex items-start gap-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 mt-1 shrink-0 animate-pulse"></span>
-            <div>
-              <div className="font-bold text-emerald-300 flex items-center gap-1.5">
-                <span>[OBSERVED]</span>
-                <span className="text-[10px] text-emerald-400/80 font-normal">Real-Time Radar & Gauges</span>
-              </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                Copernicus Sentinel-1 C-SAR (VV+VH) + CWC 35 Telemetry Gauges. Confidence: 96%
-              </p>
+      {/* Executive Welcome & Live Telemetry Banner */}
+      <div className="bg-gradient-to-r from-emerald-950/70 via-slate-900 to-teal-950/70 border border-emerald-800/50 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-900/60 border border-emerald-700/60 text-emerald-300 text-xs font-semibold mb-3">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Assam State Agri-Market Intelligence Live Telemetry</span>
             </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              Statewide Commodity Price Intelligence & Decision Cockpit
+            </h1>
+            <p className="text-slate-300 text-sm mt-1 max-w-3xl">
+              Fusing Agmarknet & e-NAM mandis, AAU Jorhat AMIU field surveys, IMD weather patterns, and Copernicus Sentinel-2 satellite phenology to eliminate distress sales across Assam’s 35 districts.
+            </p>
           </div>
 
-          <div className="bg-slate-950/70 p-2.5 rounded-lg border border-amber-800/40 flex items-start gap-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 mt-1 shrink-0"></span>
-            <div>
-              <div className="font-bold text-amber-300 flex items-center gap-1.5">
-                <span>[FORECAST]</span>
-                <span className="text-[10px] text-amber-400/80 font-normal">24h–48h Numerical Models</span>
-              </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                IMD WRF 3km rainfall grids + CWC hydrological stage forecast models. CI: 91%
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-slate-950/70 p-2.5 rounded-lg border border-purple-800/40 flex items-start gap-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-purple-400 mt-1 shrink-0"></span>
-            <div>
-              <div className="font-bold text-purple-300 flex items-center gap-1.5">
-                <span>[SIMULATED]</span>
-                <span className="text-[10px] text-purple-400/80 font-normal">Hydrodynamic & Breach AI</span>
-              </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                2D Saint-Venant PINN surrogate breach wavefront simulation. CI: 89%
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* State Crisis Overview KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
-          <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
-            <span>Critical Rivers</span>
-            <AlertTriangle className="w-4 h-4 text-red-400" />
-          </div>
-          <div className="text-2xl font-bold text-red-400">{criticalStations} / {ASSAM_RIVER_STATIONS.length}</div>
-          <div className="text-[11px] text-slate-400 mt-1">Above Extreme Danger Level</div>
-        </div>
-
-        <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
-          <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
-            <span>Submerged Area</span>
-            <Waves className="w-4 h-4 text-cyan-400" />
-          </div>
-          <div className="text-2xl font-bold text-cyan-300">{totalSubmergedArea.toFixed(1)} <span className="text-sm font-normal">sq km</span></div>
-          <div className="text-[11px] text-slate-400 mt-1">Sentinel-1 SAR Verified</div>
-        </div>
-
-        <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
-          <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
-            <span>Population at Risk</span>
-            <Users className="w-4 h-4 text-amber-400" />
-          </div>
-          <div className="text-2xl font-bold text-amber-300">{(totalAffectedPop / 100000).toFixed(2)} <span className="text-sm font-normal">Lakh</span></div>
-          <div className="text-[11px] text-slate-400 mt-1">Across 8 High-Impact Dists</div>
-        </div>
-
-        <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md">
-          <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
-            <span>Relief Camps Active</span>
-            <Home className="w-4 h-4 text-emerald-400" />
-          </div>
-          <div className="text-2xl font-bold text-emerald-400">{totalCamps}</div>
-          <div className="text-[11px] text-slate-400 mt-1">{totalInmates.toLocaleString()} inmates sheltered</div>
-        </div>
-
-        <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md col-span-2 md:col-span-1">
-          <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
-            <span>Critical Dykes (BHI &gt; 80)</span>
-            <ShieldAlert className="w-4 h-4 text-rose-400" />
-          </div>
-          <div className="text-2xl font-bold text-rose-400">18</div>
-          <div className="text-[11px] text-slate-400 mt-1">Immediate Breach Watch</div>
-        </div>
-      </div>
-
-      {/* Main Grid: River Gauges & Active CAP Alerts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* River Gauges Telemetry (2 Cols) */}
-        <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-md">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <div>
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <Waves className="w-5 h-5 text-cyan-400" />
-                <span>Major River Hydrological Telemetry & Stage Forecasts</span>
-              </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Central Water Commission (CWC) Real-Time Stations & 24h/48h Forecasts
-              </p>
-            </div>
-            <button 
-              onClick={onNavigateToMap}
-              className="text-xs text-cyan-400 hover:text-cyan-300 font-medium flex items-center gap-1 cursor-pointer bg-cyan-950/60 border border-cyan-800 px-3 py-1.5 rounded-lg"
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => onNavigateTab('arbitrage')}
+              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-emerald-600/30 transition-all flex items-center gap-2 cursor-pointer"
             >
-              <span>View on 4D Map</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
+              <Zap className="w-4 h-4" />
+              <span>Run Hold vs. Sell Sandbox</span>
+            </button>
+            <button
+              onClick={() => onNavigateTab('advisory')}
+              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <MessageSquare className="w-4 h-4 text-emerald-400" />
+              <span>Dispatch Farmer Alerts</span>
             </button>
           </div>
+        </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 text-[11px] uppercase tracking-wider">
-                <tr>
-                  <th className="py-2.5 px-3 rounded-l-lg">Station / River</th>
-                  <th className="py-2.5 px-3">District</th>
-                  <th className="py-2.5 px-3 text-right">Danger (m)</th>
-                  <th className="py-2.5 px-3 text-right">Current (m)</th>
-                  <th className="py-2.5 px-3 text-center">Trend</th>
-                  <th className="py-2.5 px-3 text-right">24h Forecast</th>
-                  <th className="py-2.5 px-3 rounded-r-lg text-center">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800 text-slate-300">
-                {ASSAM_RIVER_STATIONS.map((station) => (
-                  <tr key={station.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3 px-3">
-                      <div className="font-semibold text-white">{station.name}</div>
-                      <div className="text-[11px] text-slate-400">{station.river}</div>
-                    </td>
-                    <td className="py-3 px-3 text-slate-300">{station.district}</td>
-                    <td className="py-3 px-3 text-right font-mono text-slate-400">{station.dangerLevelM.toFixed(2)}</td>
-                    <td className="py-3 px-3 text-right font-mono font-bold text-white">
-                      {station.currentLevelM.toFixed(2)}
-                      {station.currentLevelM > station.dangerLevelM && (
-                        <span className="text-[10px] text-red-400 block font-normal">
-                          +{(station.currentLevelM - station.dangerLevelM).toFixed(2)}m
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      {station.trend === 'RISING' ? (
-                        <span className="inline-flex items-center gap-1 text-red-400 text-[11px] font-medium">
-                          <TrendingUp className="w-3.5 h-3.5" /> Rising
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-emerald-400 text-[11px] font-medium">
-                          <TrendingDown className="w-3.5 h-3.5" /> Receding
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3 px-3 text-right font-mono text-amber-300">
-                      {station.forecast24hM.toFixed(2)} m
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        station.status === 'ABOVE_DANGER_LEVEL'
-                          ? 'bg-red-950 text-red-300 border border-red-800'
-                          : 'bg-amber-950 text-amber-300 border border-amber-800'
-                      }`}>
-                        {station.status === 'ABOVE_DANGER_LEVEL' ? 'ABOVE DANGER' : 'WARNING'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* 4 Core Impact Metrics */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-800/80">
+          <div className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
+            <div className="text-xs text-slate-400 font-medium">Statewide Coverage</div>
+            <div className="text-xl font-bold text-white mt-1">35 Districts</div>
+            <div className="text-[11px] text-emerald-400 mt-0.5">65+ Regulated Mandis & Hats</div>
+          </div>
+          <div className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
+            <div className="text-xs text-slate-400 font-medium">Farmgate Price Uplift</div>
+            <div className="text-xl font-bold text-emerald-400 mt-1">+18% to +26%</div>
+            <div className="text-[11px] text-slate-400 mt-0.5">Target Net Realization</div>
+          </div>
+          <div className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
+            <div className="text-xs text-slate-400 font-medium">Distress Sale Reduction</div>
+            <div className="text-xl font-bold text-cyan-400 mt-1">35% Reduction</div>
+            <div className="text-[11px] text-slate-400 mt-0.5">Peak Harvest Windows</div>
+          </div>
+          <div className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
+            <div className="text-xs text-slate-400 font-medium">AI Model Accuracy</div>
+            <div className="text-xl font-bold text-purple-400 mt-1">5.75% MAPE</div>
+            <div className="text-[11px] text-slate-400 mt-0.5">7-Day Quantile TFT Engine</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Critical Distress Alerts Strip */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-amber-400" />
+            <h2 className="text-base font-bold text-white">Live Market Alerts & Early Warning Signals</h2>
+          </div>
+          <span className="text-xs text-slate-400">Updated Real-Time via ASDC Ingestion Stream</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          {MOCK_ALERTS.map((alert) => (
+            <div 
+              key={alert.id}
+              className={`p-4 rounded-xl border transition-all ${
+                alert.severity === 'CRITICAL'
+                  ? 'bg-rose-950/40 border-rose-800/60 text-rose-200'
+                  : alert.severity === 'WARNING'
+                  ? 'bg-amber-950/40 border-amber-800/60 text-amber-200'
+                  : alert.severity === 'OPPORTUNITY'
+                  ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-200'
+                  : 'bg-cyan-950/40 border-cyan-800/60 text-cyan-200'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                      alert.severity === 'CRITICAL' ? 'bg-rose-900 text-rose-300' :
+                      alert.severity === 'WARNING' ? 'bg-amber-900 text-amber-300' :
+                      alert.severity === 'OPPORTUNITY' ? 'bg-emerald-900 text-emerald-300' : 'bg-cyan-900 text-cyan-300'
+                    }`}>
+                      {alert.severity}
+                    </span>
+                    <span className="text-xs font-semibold text-white">{alert.title}</span>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+                    {alert.message}
+                  </p>
+                  <p className="text-xs text-emerald-400/90 mt-1.5 font-medium italic">
+                    {alert.titleAssamese} — {alert.messageAssamese}
+                  </p>
+                </div>
+                <button
+                  onClick={() => alert.actionableTarget && onNavigateTab(alert.actionableTarget)}
+                  className="p-1.5 rounded-lg bg-slate-900/60 hover:bg-slate-800 text-slate-200 hover:text-white transition-colors cursor-pointer shrink-0"
+                  title="Inspect Advisory"
+                >
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Primary Commodities Live Ticker & Quick Forecast Cards */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+          <div>
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <Wheat className="w-5 h-5 text-emerald-400" />
+              <span>Assam Key Commodities — Daily Clearing Rates & Trends</span>
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Wholesale modal transaction prices across primary assembly mandis (Kharupetia, Pamohi, Howly, Silchar, Nagaon)
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-slate-400">Total Monitored Commodities:</span>
+            <span className="font-bold text-white bg-slate-800 px-2 py-0.5 rounded">
+              {ASSAM_COMMODITIES.length} Varieties
+            </span>
           </div>
         </div>
 
-        {/* Right Column: Active CAP Bulletins & Quick Actions */}
-        <div className="space-y-6">
-          {/* Active CAP Bulletins */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-md">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Radio className="w-4 h-4 text-red-400 animate-pulse" />
-                <span>Live CAP Alerts Broadcast</span>
-              </h3>
-              <span className="text-[10px] bg-red-950 text-red-300 px-2 py-0.5 rounded-full border border-red-800 font-mono">
-                {CAP_ACTIVE_ALERTS.length} Dispatched
-              </span>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {ASSAM_COMMODITIES.map((crop) => {
+            const isMspDeficit = crop.mspPerQuintal && crop.currentModalPrice < crop.mspPerQuintal;
+            return (
+              <div
+                key={crop.id}
+                onClick={() => {
+                  onSelectCommodity(crop.id);
+                  onNavigateTab('forecast');
+                }}
+                className={`p-4 rounded-xl border transition-all cursor-pointer group hover:shadow-lg ${
+                  isMspDeficit
+                    ? 'bg-rose-950/20 border-rose-800/50 hover:border-rose-600'
+                    : 'bg-slate-950/60 border-slate-800 hover:border-emerald-600'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="font-bold text-white text-sm group-hover:text-emerald-300 transition-colors">
+                      {crop.name}
+                    </h3>
+                    <p className="text-xs text-slate-400 font-medium">{crop.assameseName}</p>
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    crop.perishability === 'HIGHLY_PERISHABLE'
+                      ? 'bg-rose-950 text-rose-300 border border-rose-800'
+                      : crop.perishability === 'SEMI_PERISHABLE'
+                      ? 'bg-amber-950 text-amber-300 border border-amber-800'
+                      : 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                  }`}>
+                    {crop.perishability.replace('_', ' ')}
+                  </span>
+                </div>
 
-            <div className="space-y-3">
-              {CAP_ACTIVE_ALERTS.map((alert) => (
-                <div key={alert.id} className="bg-slate-950 p-3.5 rounded-lg border border-red-900/40 text-xs">
-                  <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
-                    <span className="font-mono text-red-400 font-bold">{alert.severity}</span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> 16:30 IST
+                <div className="mt-4 flex items-baseline justify-between">
+                  <div>
+                    <div className="text-xl font-extrabold text-white">
+                      ₹{crop.currentModalPrice.toLocaleString()}
+                    </div>
+                    <div className="text-[11px] text-slate-400">{crop.unit}</div>
+                  </div>
+
+                  <div className={`flex items-center gap-1 text-xs font-bold ${
+                    crop.priceChange24hPct >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                  }`}>
+                    {crop.priceChange24hPct >= 0 ? (
+                      <TrendingUp className="w-3.5 h-3.5" />
+                    ) : (
+                      <TrendingDown className="w-3.5 h-3.5" />
+                    )}
+                    <span>{crop.priceChange24hPct >= 0 ? `+${crop.priceChange24hPct}%` : `${crop.priceChange24hPct}%`}</span>
+                  </div>
+                </div>
+
+                {crop.mspPerQuintal && (
+                  <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+                    <span className="text-slate-400">Statutory MSP:</span>
+                    <span className={`font-mono font-semibold ${isMspDeficit ? 'text-rose-400 font-bold' : 'text-slate-300'}`}>
+                      ₹{crop.mspPerQuintal.toLocaleString()}
+                      {isMspDeficit && ' (DEFICIT)'}
                     </span>
                   </div>
-                  <h4 className="font-semibold text-white leading-snug">{alert.headlineEnglish}</h4>
-                  <p className="text-[11px] text-slate-400 font-serif mt-1 text-slate-300">
-                    {alert.headlineAssamese}
-                  </p>
-                  <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px]">
-                    <span className="text-slate-400">Target: {alert.targetDistricts.join(', ')}</span>
-                    <span className="text-cyan-400 font-mono">SMS • CAP • Siren</span>
-                  </div>
+                )}
+
+                <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between">
+                  <span>Daily Arrival:</span>
+                  <span className="text-slate-300 font-medium">{crop.dailyArrivalTonnes} MT</span>
                 </div>
-              ))}
-            </div>
 
-            <button 
-              onClick={onNavigateToAlerts}
-              className="w-full mt-4 bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer"
-            >
-              Open CAP Dispatch Console
-            </button>
-          </div>
-
-          {/* Quick Simulation Launcher */}
-          <div className="bg-gradient-to-br from-cyan-950/60 to-blue-950/60 border border-cyan-800/60 rounded-xl p-5 shadow-md">
-            <div className="flex items-center gap-2 text-cyan-300 font-bold text-sm mb-1.5">
-              <Sparkles className="w-4 h-4 text-cyan-400" />
-              <span>Hydrodynamic Scenario Sandbox</span>
-            </div>
-            <p className="text-xs text-slate-300 leading-relaxed mb-4">
-              Simulate complex contingencies: upstream cloudbursts (up to 300mm), dam release surges from Kurichhu, or sudden levee breaches.
-            </p>
-            <button
-              onClick={onNavigateToSimulation}
-              className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-2.5 rounded-lg text-xs transition-colors shadow-lg shadow-cyan-600/30 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>Launch "What-If" Simulation</span>
-              <ArrowUpRight className="w-4 h-4" />
-            </button>
-          </div>
+                <div className="mt-3 pt-2 border-t border-slate-800/60 flex items-center justify-between text-xs text-emerald-400 group-hover:translate-x-1 transition-transform">
+                  <span className="font-medium text-[11px]">View AI Forecast</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* District Vulnerability Summary Cards */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-md">
-        <h3 className="text-sm font-bold text-white mb-3">District Exposure & Relief Operations Summary</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-          {DISTRICT_SUMMARIES.map((d) => (
-            <div key={d.district} className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-xs">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="font-bold text-white">{d.district}</span>
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                  d.status === 'CRITICAL' ? 'bg-red-950 text-red-400 border border-red-800' :
-                  d.status === 'HIGH' ? 'bg-amber-950 text-amber-400 border border-amber-800' :
-                  'bg-blue-950 text-blue-400 border border-blue-800'
+      {/* Regional Mandi Overview Strip */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <Warehouse className="w-5 h-5 text-emerald-400" />
+              <span>Assam Primary Market Committees & Assembly Mandis</span>
+            </h2>
+            <p className="text-xs text-slate-400">
+              Arrival volumes and physical market capacity across key regional distribution nodes
+            </p>
+          </div>
+          <button
+            onClick={() => onNavigateTab('map')}
+            className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer"
+          >
+            <span>Open Geospatial Map</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {ASSAM_MANDIS.slice(0, 4).map((mandi) => (
+            <div key={mandi.id} className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-white text-xs">{mandi.name}</span>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  mandi.status === 'PEAK_GLUT' ? 'bg-rose-950 text-rose-300 border border-rose-800' :
+                  mandi.status === 'PRICE_CRASH_ALERT' ? 'bg-amber-950 text-amber-300 border border-amber-800' :
+                  'bg-emerald-950 text-emerald-300 border border-emerald-800'
                 }`}>
-                  {d.status}
+                  {mandi.status.replace('_', ' ')}
                 </span>
               </div>
-              <div className="space-y-1 text-[11px] text-slate-400">
-                <div className="flex justify-between">
-                  <span>Submerged Area:</span>
-                  <span className="text-slate-200 font-mono font-medium">{d.submergedAreaSqKm} sq km</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Affected People:</span>
-                  <span className="text-slate-200 font-mono font-medium">{d.affectedPopulation.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Active Camps:</span>
-                  <span className="text-emerald-400 font-mono font-medium">{d.activeReliefCamps} ({d.inmatesCount} inmates)</span>
-                </div>
-              </div>
+              <div className="text-[11px] text-emerald-400 font-medium mt-0.5">{mandi.assameseName}</div>
+              <div className="text-xs text-slate-400 mt-2">District: {mandi.district}</div>
+              <div className="text-xs text-slate-300 font-medium mt-1">Arrival: {mandi.dailyArrivalTonnes} MT / day</div>
+              <div className="text-[11px] text-slate-400 mt-1">Highway: {mandi.connectedHighway}</div>
             </div>
           ))}
         </div>
