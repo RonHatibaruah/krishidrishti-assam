@@ -50,50 +50,144 @@ class NumberedCanvas(canvas.Canvas):
         self.drawRightString(letter[0] - 54, 32, f"Page {self._pageNumber} of {page_count}")
         self.restoreState()
 
-def clean_inline_markdown(text):
+def format_inline_markdown(text):
     if not text:
         return ""
     t = text.strip()
-    
+
+    # 1. Protect inline code spans: `...`
     code_matches = []
     def save_code(m):
         code_matches.append(m.group(1))
-        return f"___CODE_MATCH_{len(code_matches)-1}___"
-    
+        return f"___CODE_PH_{len(code_matches)-1}___"
     t = re.sub(r'`([^`]+)`', save_code, t)
-    
-    # Escape XML
+
+    # 2. Transform known LaTeX inline math into clean typography before XML escaping
+    math_replacements = [
+        (r'\$P_\{10\},\s*P_\{50\},\s*P_\{90\}\$', 'P₁₀, P₅₀, P₉₀ (Quantile Cones)'),
+        (r'\$P_\{([0-9]+)\}\$', r'P\1'),
+        (r'\$NRV\$', 'NRV'),
+        (r'\$q\s*\\in\s*\\\{0\.10,\s*0\.50,\s*0\.90\\\}\$', 'q ∈ {0.10, 0.50, 0.90}'),
+        (r'\$\\hat\{y\}\^\{\(([0-9.]+)\)\}\$', r'ŷ^(\1)'),
+        (r'\$M_\\text\{origin\}\$', 'M_origin'),
+        (r'\$M_\\text\{dest\}\$', 'M_dest'),
+        (r'\$\\Delta\s*d\$', 'Δd'),
+        (r'\$\\theta_\\text\{risk\\_premium\}\$', 'θ_risk_premium'),
+        (r'\\mathcal\{L\}_q', 'L_q'),
+        (r'\\mathcal\{L\}_\\text\{total\}', 'L_total'),
+    ]
+    for pattern, repl in math_replacements:
+        t = re.sub(pattern, repl, t)
+
+    # Convert generic single inline math: $var$ -> var
+    t = re.sub(r'\$([^$]+)\$', r'\1', t)
+
+    # 3. Escape XML entities (now <, >, & are completely safe)
     t = escape(t)
-    
-    # Bold italic
+
+    # 4. Bold and Italic formatting
     t = re.sub(r'\*\*\*([^*]+)\*\*\*', r'<b><i>\1</i></b>', t)
-    t = re.sub(r'___([^_]+)___', r'<b><i>\1</i></b>', t)
-    
-    # Bold
     t = re.sub(r'\*\*([^*]+)\*\*', r'<b>\1</b>', t)
-    t = re.sub(r'__([^_]+)__', r'<b>\1</b>', t)
-    
-    # Italic
     t = re.sub(r'\*([^*]+)\*', r'<i>\1</i>', t)
-    t = re.sub(r'_([^_]+)_', r'<i>\1</i>', t)
-    
-    # Links
+
+    # 5. Markdown Links: [label](url)
     t = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<font color="#0284c7"><u>\1</u></font>', t)
-    
-    # Restore code
+
+    # 6. Restore code placeholders with clean monospace font
     for idx, c in enumerate(code_matches):
         c_esc = escape(c)
-        t = t.replace(f"___CODE_MATCH_{idx}___", f'<font name="Courier" color="#0369a1">{c_esc}</font>')
-        
+        t = t.replace(f"___CODE_PH_{idx}___", f'<font name="Courier" color="#0369a1"><b>{c_esc}</b></font>')
+
     return t
 
 def safe_paragraph(text, style):
-    cleaned = clean_inline_markdown(text)
+    cleaned = format_inline_markdown(text)
     try:
         return Paragraph(cleaned, style)
     except Exception:
+        # Fallback in case of parsing exception
         plain = re.sub(r'<[^>]+>', '', cleaned)
         return Paragraph(escape(plain), style)
+
+def create_code_block(code_lines, available_width=490):
+    styles = getSampleStyleSheet()
+    code_style = ParagraphStyle(
+        'CodeBlockText', parent=styles['Normal'], fontName='Courier', fontSize=6.5, leading=8.5,
+        textColor=colors.HexColor('#0369a1'), spaceAfter=0
+    )
+    paras = []
+    for cl in code_lines:
+        cl_esc = escape(cl).replace(' ', '&nbsp;')
+        paras.append(Paragraph(f'<font name="Courier">{cl_esc}</font>', code_style))
+
+    t = Table([[paras]], colWidths=[available_width])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f8fafc')),
+        ('BOX', (0,0), (-1,-1), 0.75, colors.HexColor('#94a3b8')),
+        ('TOPPADDING', (0,0), (-1,-1), 5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ('LEFTPADDING', (0,0), (-1,-1), 8),
+        ('RIGHTPADDING', (0,0), (-1,-1), 8),
+    ]))
+    return [Spacer(1, 3), t, Spacer(1, 4)]
+
+def create_math_block(math_text, available_width=490):
+    styles = getSampleStyleSheet()
+    mt = math_text.strip('$').strip()
+
+    # Pre-translate known complex formulas to elegant Unicode math typography
+    if 'Pinball Loss' in mt or r'\mathcal{L}_q(y, \hat{y}_q)' in mt:
+        formatted = "<b>L<sub>q</sub>(y, ŷ<sub>q</sub>) = max [ q · (y - ŷ<sub>q</sub>), (1 - q) · (ŷ<sub>q</sub> - y) ]</b>"
+    elif r'\mathcal{L}_{\text{total}}' in mt:
+        formatted = "<b>L<sub>total</sub> = (1 / NT) · ∑<sub>i=1..N</sub> ∑<sub>τ=1..T</sub> ∑<sub>q ∈ {0.1, 0.5, 0.9}</sub> L<sub>q</sub>( y<sub>i, t+τ</sub>, ŷ<sub>i, t+τ</sub><sup>(q)</sup> )</b>"
+    elif 'NRV(M_{\\text{dest}})' in mt or 'NRV(M_{dest})' in mt:
+        formatted = "<b>NRV(M<sub>dest</sub>) = P<sub>expected</sub>(M<sub>dest</sub>) · (1 - δ<sub>shrinkage</sub> · Δt) - [ (C<sub>base</sub> + C<sub>km</sub> · D + C<sub>toll</sub>) / Q ] - μ<sub>cess</sub> · P<sub>expected</sub>(M<sub>dest</sub>) - C<sub>handling</sub></b>"
+    elif 'Price_{\\text{mandi}}' in mt or 'Price_{mandi}' in mt:
+        formatted = "<b>NRV = Price<sub>mandi</sub> - Transport Cost - Mandi Cess - Transit Shrinkage</b>"
+    elif 'Recommend Route' in mt or r'\theta_{\text{risk\_premium}}' in mt:
+        formatted = "<b>Recommend Route to M<sub>dest</sub> ⇔ NRV(M<sub>dest</sub>) > P(M<sub>origin</sub>) + θ<sub>risk_premium</sub></b>"
+    elif r'\Delta \Pi_{\text{storage}}' in mt:
+        formatted = "<b>ΔΠ<sub>storage</sub>(Δd) = [ P̂<sub>t+Δd</sub><sup>(0.50)</sup> · (1 - λ<sub>loss</sub>(Δd)) ] - P<sub>harvest</sub> - (R<sub>rent</sub> · Δd) - [ P<sub>harvest</sub> · (r<sub>interest</sub> / 365) · Δd ]</b>"
+    else:
+        # General LaTeX cleanup
+        cleaned = mt
+        cleaned = re.sub(r'\\text\{([^}]+)\}', r'\1', cleaned)
+        cleaned = re.sub(r'\\hat\{([a-zA-Z])\}', r'\1̂', cleaned)
+        cleaned = re.sub(r'\\cdot', '·', cleaned)
+        cleaned = re.sub(r'\\Delta', 'Δ', cleaned)
+        cleaned = re.sub(r'\\Pi', 'Π', cleaned)
+        cleaned = re.sub(r'\\delta', 'δ', cleaned)
+        cleaned = re.sub(r'\\mu', 'μ', cleaned)
+        cleaned = re.sub(r'\\theta', 'θ', cleaned)
+        cleaned = re.sub(r'\\lambda', 'λ', cleaned)
+        cleaned = re.sub(r'\\tau', 'τ', cleaned)
+        cleaned = re.sub(r'\\sum', '∑', cleaned)
+        cleaned = re.sub(r'\\in', '∈', cleaned)
+        cleaned = re.sub(r'\\iff', '⇔', cleaned)
+        cleaned = re.sub(r'\\Big[()]', '', cleaned)
+        cleaned = re.sub(r'\\left\[', '[', cleaned)
+        cleaned = re.sub(r'\\right\]', ']', cleaned)
+        cleaned = re.sub(r'\\frac\{([^}]+)\}\{([^}]+)\}', r'(\1 / \2)', cleaned)
+        cleaned = re.sub(r'_\{([^}]+)\}', r'<sub>\1</sub>', cleaned)
+        cleaned = re.sub(r'\^\{([^}]+)\}', r'<sup>\1</sup>', cleaned)
+        cleaned = cleaned.replace('\\', '')
+        formatted = f"<b>{cleaned}</b>"
+
+    math_style = ParagraphStyle(
+        'MathCardText', parent=styles['Normal'], fontName='Helvetica', fontSize=8.5, leading=12,
+        textColor=colors.HexColor('#065f46'), alignment=1
+    )
+
+    t = Table([[Paragraph(formatted, math_style)]], colWidths=[available_width])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f0fdf4')),
+        ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#86efac')),
+        ('TOPPADDING', (0,0), (-1,-1), 5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ('LEFTPADDING', (0,0), (-1,-1), 10),
+        ('RIGHTPADDING', (0,0), (-1,-1), 10),
+    ]))
+    return [Spacer(1, 3), t, Spacer(1, 4)]
 
 def create_figure_flowable(img_path, caption_text, width=490, height=275.6):
     styles = getSampleStyleSheet()
@@ -118,9 +212,16 @@ def parse_markdown_content(lines, available_width=490):
     bullet_style = ParagraphStyle(
         'CustomBullet', parent=body_style, leftIndent=12, bulletIndent=4, spaceAfter=2
     )
+    bullet_sub_style = ParagraphStyle(
+        'CustomBulletSub', parent=body_style, leftIndent=22, bulletIndent=12, spaceAfter=2
+    )
     h3_style = ParagraphStyle(
         'CustomH3', parent=styles['Heading3'], fontName='Helvetica-Bold', fontSize=9, leading=12,
         textColor=colors.HexColor('#065f46'), spaceBefore=5, spaceAfter=2, keepWithNext=True
+    )
+    h4_style = ParagraphStyle(
+        'CustomH4', parent=styles['Heading4'], fontName='Helvetica-Bold', fontSize=8.5, leading=11,
+        textColor=colors.HexColor('#0f766e'), spaceBefore=4, spaceAfter=2, keepWithNext=True
     )
     table_cell = ParagraphStyle(
         'TableCell', parent=styles['Normal'], fontName='Helvetica', fontSize=7, leading=9.5,
@@ -130,15 +231,61 @@ def parse_markdown_content(lines, available_width=490):
         'TableHdr', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=7.5, leading=10,
         textColor=colors.white
     )
-    
+
     flowables = []
     in_table = False
     table_rows = []
-    
+
+    in_code_block = False
+    code_block_lines = []
+
+    in_math_block = False
+    math_block_lines = []
+
     for line in lines:
         stripped = line.strip()
-        
-        # Check table
+
+        # 1. Code Block Handling (```)
+        if stripped.startswith('```'):
+            if in_code_block:
+                # Close code block
+                flowables.extend(create_code_block(code_block_lines, available_width))
+                in_code_block = False
+                code_block_lines = []
+            else:
+                in_code_block = True
+                code_block_lines = []
+            continue
+
+        if in_code_block:
+            code_block_lines.append(line)
+            continue
+
+        # 2. Display Math Block Handling ($$...$$)
+        if stripped.startswith('$$') and stripped.endswith('$$') and len(stripped) > 2:
+            flowables.extend(create_math_block(stripped, available_width))
+            continue
+        elif stripped.startswith('$$'):
+            if in_math_block:
+                flowables.extend(create_math_block('\n'.join(math_block_lines), available_width))
+                in_math_block = False
+                math_block_lines = []
+            else:
+                in_math_block = True
+                math_block_lines = []
+            continue
+
+        if in_math_block:
+            if stripped.endswith('$$'):
+                math_block_lines.append(stripped.rstrip('$$'))
+                flowables.extend(create_math_block('\n'.join(math_block_lines), available_width))
+                in_math_block = False
+                math_block_lines = []
+            else:
+                math_block_lines.append(stripped)
+            continue
+
+        # 3. Table Handling (| ... |)
         if stripped.startswith('|') and stripped.endswith('|'):
             if re.match(r'^\|?[\s\-:|]+\|?$', stripped):
                 continue
@@ -161,7 +308,7 @@ def parse_markdown_content(lines, available_width=490):
                             st = table_hdr if r_idx == 0 else table_cell
                             row_cells.append(safe_paragraph(c, st))
                         t_data.append(row_cells)
-                    
+
                     t = Table(t_data, colWidths=[col_w]*num_cols)
                     t.setStyle(TableStyle([
                         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#065f46')),
@@ -180,16 +327,34 @@ def parse_markdown_content(lines, available_width=490):
                     flowables.append(Spacer(1, 4))
                 in_table = False
                 table_rows = []
-        
+
         if not stripped:
             continue
-            
-        if stripped.startswith('### '):
+
+        # 4. Horizontal Rules
+        if stripped == '---':
+            flowables.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor('#cbd5e1'), spaceBefore=4, spaceAfter=4))
+            continue
+
+        # 5. Headings
+        if stripped.startswith('#### '):
+            flowables.append(safe_paragraph(stripped[5:], h4_style))
+        elif stripped.startswith('### '):
             flowables.append(safe_paragraph(stripped[4:], h3_style))
+        elif stripped.startswith('## '):
+            flowables.append(safe_paragraph(stripped[3:], h3_style))
+        elif stripped.startswith('# '):
+            flowables.append(safe_paragraph(stripped[2:], h3_style))
+
+        # 6. List Items
+        elif line.startswith('   - ') or line.startswith('   * ') or line.startswith('   • '):
+            flowables.append(safe_paragraph(stripped[2:], bullet_sub_style))
         elif stripped.startswith('• ') or stripped.startswith('- ') or stripped.startswith('* '):
-            flowables.append(safe_paragraph(stripped, bullet_style))
+            flowables.append(safe_paragraph(stripped[2:], bullet_style))
         elif re.match(r'^\d+\.\s', stripped):
             flowables.append(safe_paragraph(stripped, bullet_style))
+
+        # 7. Blockquotes
         elif stripped.startswith('> '):
             callout_style = ParagraphStyle(
                 'Callout', parent=body_style, fontName='Helvetica-Oblique',
@@ -198,8 +363,8 @@ def parse_markdown_content(lines, available_width=490):
             flowables.append(safe_paragraph(stripped[2:], callout_style))
         else:
             flowables.append(safe_paragraph(stripped, body_style))
-            
-    # Flush leftover table
+
+    # Flush any remaining table
     if in_table and table_rows:
         num_cols = len(table_rows[0])
         col_w = available_width / float(num_cols)
@@ -218,7 +383,7 @@ def parse_markdown_content(lines, available_width=490):
         ]))
         flowables.append(t)
         flowables.append(Spacer(1, 4))
-        
+
     return flowables
 
 def build_proposal_pdf(output_path):
@@ -404,6 +569,6 @@ def build_proof_of_work_pdf(output_path):
 if __name__ == '__main__':
     proposal_pdf = os.path.join(base_dir, 'NESFIC_D35_Proposal_Ron_Hatibaruah.pdf')
     pow_pdf = os.path.join(base_dir, 'NESFIC_D35_Proof_of_Work_Ron_Hatibaruah.pdf')
-    
+
     build_proposal_pdf(proposal_pdf)
     build_proof_of_work_pdf(pow_pdf)
