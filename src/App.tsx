@@ -21,8 +21,16 @@ export const App: React.FC = () => {
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState<boolean>(false);
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
 
-  // Restore previous admin session if exists
+  // Restore previous admin session if exists & support URL tab routing
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+    const hashParam = window.location.hash.replace('#', '');
+    const targetTab = tabParam || hashParam;
+    if (targetTab && ['executive', 'forecast', 'arbitrage', 'map', 'storage', 'advisory', 'admin'].includes(targetTab)) {
+      setActiveTab(targetTab);
+    }
+
     const saved = localStorage.getItem('krishidrishti_admin_session');
     if (saved) {
       try {
