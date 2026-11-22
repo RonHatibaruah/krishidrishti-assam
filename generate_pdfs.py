@@ -50,7 +50,7 @@ class NumberedCanvas(canvas.Canvas):
         self.drawRightString(letter[0] - 54, 32, f"Page {self._pageNumber} of {page_count}")
         self.restoreState()
 
-def format_inline_markdown(text):
+def sanitize_to_reportlab_xml(text):
     if not text:
         return ""
     t = text.strip()
@@ -59,53 +59,69 @@ def format_inline_markdown(text):
     code_matches = []
     def save_code(m):
         code_matches.append(m.group(1))
-        return f"___CODE_PH_{len(code_matches)-1}___"
+        return f"___CODE_MATCH_{len(code_matches)-1}___"
     t = re.sub(r'`([^`]+)`', save_code, t)
 
-    # 2. Transform known LaTeX inline math into clean typography before XML escaping
-    math_replacements = [
-        (r'\$P_\{10\},\s*P_\{50\},\s*P_\{90\}\$', 'P₁₀, P₅₀, P₉₀ (Quantile Cones)'),
-        (r'\$P_\{([0-9]+)\}\$', r'P\1'),
-        (r'\$NRV\$', 'NRV'),
-        (r'\$q\s*\\in\s*\\\{0\.10,\s*0\.50,\s*0\.90\\\}\$', 'q ∈ {0.10, 0.50, 0.90}'),
-        (r'\$\\hat\{y\}\^\{\(([0-9.]+)\)\}\$', r'ŷ^(\1)'),
-        (r'\$M_\\text\{origin\}\$', 'M_origin'),
-        (r'\$M_\\text\{dest\}\$', 'M_dest'),
-        (r'\$\\Delta\s*d\$', 'Δd'),
-        (r'\$\\theta_\\text\{risk\\_premium\}\$', 'θ_risk_premium'),
-        (r'\\mathcal\{L\}_q', 'L_q'),
-        (r'\\mathcal\{L\}_\\text\{total\}', 'L_total'),
-    ]
-    for pattern, repl in math_replacements:
-        t = re.sub(pattern, repl, t)
+    # 2. Transliterate non-ASCII regional script for universal PDF viewer compatibility
+    t = t.replace('(কৃষি-দৃষ্টি)', '(Krishi-Drishti)')
+    t = t.replace('কৃষি-দৃষ্টি', 'Krishi-Drishti')
+    t = t.replace('(অসমীয়া)', '(Assamese)')
+    t = t.replace('অসমীয়া', 'Assamese')
 
-    # Convert generic single inline math: $var$ -> var
+    # 3. Replace Unicode Rupee symbol (not available in standard Type-1 Helvetica)
+    t = t.replace('₹', 'Rs. ')
+
+    # 4. Math symbols & variables
+    t = re.sub(r'\$P_\{10\},\s*P_\{50\},\s*P_\{90\}\$', 'P10, P50, P90 (Quantile Cones)', t)
+    t = re.sub(r'\$P_\{([0-9]+)\}\$', r'P\1', t)
+    t = re.sub(r'\$NRV\$', 'NRV', t)
+    t = re.sub(r'\$q\s*\\in\s*\\\{0\.10,\s*0\.50,\s*0\.90\\\}\$', 'q in {0.10, 0.50, 0.90}', t)
+    t = re.sub(r'\$\\hat\{y\}\^\{\(([0-9.]+)\)\}\$', r'ŷ^(\1)', t)
+    t = re.sub(r'\$M_\\text\{origin\}\$', 'M_origin', t)
+    t = re.sub(r'\$M_\\text\{dest\}\$', 'M_dest', t)
+    t = re.sub(r'\$\\Delta\s*d\$', 'Δd', t)
+    t = re.sub(r'\$\\theta_\\text\{risk\\_premium\}\$', 'θ_risk_premium', t)
     t = re.sub(r'\$([^$]+)\$', r'\1', t)
 
-    # 3. Escape XML entities (now <, >, & are completely safe)
+    # 5. Tokenize HTML tags & Markdown formatting so escape() does not escape valid styling
+    tokens = []
+    def save_token(tag):
+        tokens.append(tag)
+        return f"___TAG_TOKEN_{len(tokens)-1}___"
+
+    # Save existing valid tags
+    t = re.sub(r'</?(?:b|i|u|font|sub|sup)(?:\s+[^>]*)?>', lambda m: save_token(m.group(0)), t, flags=re.IGNORECASE)
+
+    # Convert markdown bold/italic into tokens
+    t = re.sub(r'\*\*\*([^*]+)\*\*\*', lambda m: f"{save_token('<b>')}{save_token('<i>')}{m.group(1)}{save_token('</i>')}{save_token('</b>')}", t)
+    t = re.sub(r'\*\*([^*]+)\*\*', lambda m: f"{save_token('<b>')}{m.group(1)}{save_token('</b>')}", t)
+    t = re.sub(r'\*([^*]+)\*', lambda m: f"{save_token('<i>')}{m.group(1)}{save_token('</i>')}", t)
+
+    # Convert markdown links into tokens
+    def link_repl(m):
+        label = m.group(1)
+        return f"{save_token('<font color=\"#0284c7\">')}{save_token('<u>')}{label}{save_token('</u>')}{save_token('</font>')}"
+    t = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', link_repl, t)
+
+    # 6. Safely escape bare XML characters (&, <, >)
     t = escape(t)
 
-    # 4. Bold and Italic formatting
-    t = re.sub(r'\*\*\*([^*]+)\*\*\*', r'<b><i>\1</i></b>', t)
-    t = re.sub(r'\*\*([^*]+)\*\*', r'<b>\1</b>', t)
-    t = re.sub(r'\*([^*]+)\*', r'<i>\1</i>', t)
+    # 7. Restore tokens
+    for idx, token in enumerate(tokens):
+        t = t.replace(f"___TAG_TOKEN_{idx}___", token)
 
-    # 5. Markdown Links: [label](url)
-    t = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<font color="#0284c7"><u>\1</u></font>', t)
-
-    # 6. Restore code placeholders with clean monospace font
+    # 8. Restore code placeholders
     for idx, c in enumerate(code_matches):
         c_esc = escape(c)
-        t = t.replace(f"___CODE_PH_{idx}___", f'<font name="Courier" color="#0369a1"><b>{c_esc}</b></font>')
+        t = t.replace(f"___CODE_MATCH_{idx}___", f'<font name="Courier" color="#0369a1"><b>{c_esc}</b></font>')
 
     return t
 
 def safe_paragraph(text, style):
-    cleaned = format_inline_markdown(text)
+    cleaned = sanitize_to_reportlab_xml(text)
     try:
         return Paragraph(cleaned, style)
     except Exception:
-        # Fallback in case of parsing exception
         plain = re.sub(r'<[^>]+>', '', cleaned)
         return Paragraph(escape(plain), style)
 
@@ -117,7 +133,8 @@ def create_code_block(code_lines, available_width=490):
     )
     paras = []
     for cl in code_lines:
-        cl_esc = escape(cl).replace(' ', '&nbsp;')
+        cl_clean = cl.replace('₹', 'Rs. ')
+        cl_esc = escape(cl_clean).replace(' ', '&nbsp;')
         paras.append(Paragraph(f'<font name="Courier">{cl_esc}</font>', code_style))
 
     t = Table([[paras]], colWidths=[available_width])
@@ -135,21 +152,19 @@ def create_math_block(math_text, available_width=490):
     styles = getSampleStyleSheet()
     mt = math_text.strip('$').strip()
 
-    # Pre-translate known complex formulas to elegant Unicode math typography
     if 'Pinball Loss' in mt or r'\mathcal{L}_q(y, \hat{y}_q)' in mt:
-        formatted = "<b>L<sub>q</sub>(y, ŷ<sub>q</sub>) = max [ q · (y - ŷ<sub>q</sub>), (1 - q) · (ŷ<sub>q</sub> - y) ]</b>"
-    elif r'\mathcal{L}_{\text{total}}' in mt:
-        formatted = "<b>L<sub>total</sub> = (1 / NT) · ∑<sub>i=1..N</sub> ∑<sub>τ=1..T</sub> ∑<sub>q ∈ {0.1, 0.5, 0.9}</sub> L<sub>q</sub>( y<sub>i, t+τ</sub>, ŷ<sub>i, t+τ</sub><sup>(q)</sup> )</b>"
-    elif 'NRV(M_{\\text{dest}})' in mt or 'NRV(M_{dest})' in mt:
-        formatted = "<b>NRV(M<sub>dest</sub>) = P<sub>expected</sub>(M<sub>dest</sub>) · (1 - δ<sub>shrinkage</sub> · Δt) - [ (C<sub>base</sub> + C<sub>km</sub> · D + C<sub>toll</sub>) / Q ] - μ<sub>cess</sub> · P<sub>expected</sub>(M<sub>dest</sub>) - C<sub>handling</sub></b>"
-    elif 'Price_{\\text{mandi}}' in mt or 'Price_{mandi}' in mt:
-        formatted = "<b>NRV = Price<sub>mandi</sub> - Transport Cost - Mandi Cess - Transit Shrinkage</b>"
-    elif 'Recommend Route' in mt or r'\theta_{\text{risk\_premium}}' in mt:
-        formatted = "<b>Recommend Route to M<sub>dest</sub> ⇔ NRV(M<sub>dest</sub>) > P(M<sub>origin</sub>) + θ<sub>risk_premium</sub></b>"
-    elif r'\Delta \Pi_{\text{storage}}' in mt:
-        formatted = "<b>ΔΠ<sub>storage</sub>(Δd) = [ P̂<sub>t+Δd</sub><sup>(0.50)</sup> · (1 - λ<sub>loss</sub>(Δd)) ] - P<sub>harvest</sub> - (R<sub>rent</sub> · Δd) - [ P<sub>harvest</sub> · (r<sub>interest</sub> / 365) · Δd ]</b>"
+        formatted = "L<sub>q</sub>(y, ŷ<sub>q</sub>) = max [ q · (y - ŷ<sub>q</sub>), (1 - q) · (ŷ<sub>q</sub> - y) ]"
+    elif r'\mathcal{L}_{\text{total}}' in mt or 'L_total' in mt:
+        formatted = "L<sub>total</sub> = (1 / NT) · ∑<sub>i=1..N</sub> ∑<sub>τ=1..T</sub> ∑<sub>q ∈ {0.1, 0.5, 0.9}</sub> L<sub>q</sub>( y<sub>i, t+τ</sub>, ŷ<sub>i, t+τ</sub><sup>(q)</sup> )"
+    elif 'NRV(M_{\\text{dest}})' in mt or 'NRV(M_{dest})' in mt or 'NRV(M_dest)' in mt:
+        formatted = "NRV(M<sub>dest</sub>) = P<sub>expected</sub>(M<sub>dest</sub>) · (1 - δ<sub>shrinkage</sub> · Δt) - [ (C<sub>base</sub> + C<sub>km</sub> · D + C<sub>toll</sub>) / Q ] - μ<sub>cess</sub> · P<sub>expected</sub>(M<sub>dest</sub>) - C<sub>handling</sub>"
+    elif 'Price_{\\text{mandi}}' in mt or 'Price_{mandi}' in mt or 'Price_mandi' in mt:
+        formatted = "NRV = Price<sub>mandi</sub> - Transport Cost - Mandi Cess - Transit Shrinkage"
+    elif 'Recommend Route' in mt or r'\theta_{\text{risk\_premium}}' in mt or 'theta_risk_premium' in mt:
+        formatted = "Recommend Route to M<sub>dest</sub> ⇔ NRV(M<sub>dest</sub>) > P(M<sub>origin</sub>) + θ<sub>risk_premium</sub>"
+    elif r'\Delta \Pi_{\text{storage}}' in mt or 'Pi_storage' in mt:
+        formatted = "ΔΠ<sub>storage</sub>(Δd) = [ P̂<sub>t+Δd</sub><sup>(0.50)</sup> · (1 - λ<sub>loss</sub>(Δd)) ] - P<sub>harvest</sub> - (R<sub>rent</sub> · Δd) - [ P<sub>harvest</sub> · (r<sub>interest</sub> / 365) · Δd ]"
     else:
-        # General LaTeX cleanup
         cleaned = mt
         cleaned = re.sub(r'\\text\{([^}]+)\}', r'\1', cleaned)
         cleaned = re.sub(r'\\hat\{([a-zA-Z])\}', r'\1̂', cleaned)
@@ -170,11 +185,11 @@ def create_math_block(math_text, available_width=490):
         cleaned = re.sub(r'\\frac\{([^}]+)\}\{([^}]+)\}', r'(\1 / \2)', cleaned)
         cleaned = re.sub(r'_\{([^}]+)\}', r'<sub>\1</sub>', cleaned)
         cleaned = re.sub(r'\^\{([^}]+)\}', r'<sup>\1</sup>', cleaned)
-        cleaned = cleaned.replace('\\', '')
-        formatted = f"<b>{cleaned}</b>"
+        cleaned = cleaned.replace('\\', '').replace('₹', 'Rs. ')
+        formatted = cleaned
 
     math_style = ParagraphStyle(
-        'MathCardText', parent=styles['Normal'], fontName='Helvetica', fontSize=8.5, leading=12,
+        'MathCardText', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=8.5, leading=12,
         textColor=colors.HexColor('#065f46'), alignment=1
     )
 
@@ -199,7 +214,8 @@ def create_figure_flowable(img_path, caption_text, width=490, height=275.6):
     if os.path.exists(img_path):
         elements.append(Spacer(1, 4))
         elements.append(Image(img_path, width=width, height=height))
-        elements.append(safe_paragraph(f"<b>Figure:</b> {caption_text}", caption_style))
+        clean_cap = caption_text.replace('₹', 'Rs. ')
+        elements.append(safe_paragraph(f"<b>Figure:</b> {clean_cap}", caption_style))
         elements.append(Spacer(1, 4))
     return elements
 
@@ -214,6 +230,10 @@ def parse_markdown_content(lines, available_width=490):
     )
     bullet_sub_style = ParagraphStyle(
         'CustomBulletSub', parent=body_style, leftIndent=22, bulletIndent=12, spaceAfter=2
+    )
+    h2_style = ParagraphStyle(
+        'CustomH2', parent=styles['Heading2'], fontName='Helvetica-Bold', fontSize=10.5, leading=14,
+        textColor=colors.HexColor('#065f46'), spaceBefore=7, spaceAfter=3, keepWithNext=True
     )
     h3_style = ParagraphStyle(
         'CustomH3', parent=styles['Heading3'], fontName='Helvetica-Bold', fontSize=9, leading=12,
@@ -248,7 +268,6 @@ def parse_markdown_content(lines, available_width=490):
         # 1. Code Block Handling (```)
         if stripped.startswith('```'):
             if in_code_block:
-                # Close code block
                 flowables.extend(create_code_block(code_block_lines, available_width))
                 in_code_block = False
                 code_block_lines = []
@@ -336,15 +355,15 @@ def parse_markdown_content(lines, available_width=490):
             flowables.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor('#cbd5e1'), spaceBefore=4, spaceAfter=4))
             continue
 
-        # 5. Headings
+        # 5. Clean Markdown Headings (prevent '#' rendering)
         if stripped.startswith('#### '):
             flowables.append(safe_paragraph(stripped[5:], h4_style))
         elif stripped.startswith('### '):
             flowables.append(safe_paragraph(stripped[4:], h3_style))
         elif stripped.startswith('## '):
-            flowables.append(safe_paragraph(stripped[3:], h3_style))
+            flowables.append(safe_paragraph(stripped[3:], h2_style))
         elif stripped.startswith('# '):
-            flowables.append(safe_paragraph(stripped[2:], h3_style))
+            flowables.append(safe_paragraph(stripped[2:], h2_style))
 
         # 6. List Items
         elif line.startswith('   - ') or line.startswith('   * ') or line.startswith('   • '):
@@ -364,7 +383,7 @@ def parse_markdown_content(lines, available_width=490):
         else:
             flowables.append(safe_paragraph(stripped, body_style))
 
-    # Flush any remaining table
+    # Flush leftover table if any
     if in_table and table_rows:
         num_cols = len(table_rows[0])
         col_w = available_width / float(num_cols)
@@ -415,19 +434,27 @@ def build_proposal_pdf(output_path):
 
     story = []
     story.append(safe_paragraph("NESFIC 2026 UNIFORM SOLUTION PROPOSAL (USPR)", title_style))
-    story.append(safe_paragraph("KrishiDrishti (Assam Agri-Price Sentinel) — Agricultural Commodity Price Intelligence & Forecasting", subtitle_style))
-    story.append(safe_paragraph("<b>Official 7-Field Application Dossier for Stream 1 (Government Department Track)</b>", subtitle_style))
+    story.append(safe_paragraph("<b>Proposed Solution Name:</b> KrishiDrishti (Assam Agri-Price Sentinel) — Agricultural Commodity Price Intelligence & Forecasting", subtitle_style))
+    story.append(safe_paragraph("Official 7-Field Application Dossier for Stream 1 (Government Department Track)", subtitle_style))
 
+    # Prominent Official Submission Metadata Box
     meta_data = [
-        [safe_paragraph("<b>Challenge ID:</b> NESFIC-D-35 (Govt Track)", meta_style), safe_paragraph("<b>Department:</b> Department of Agriculture, Govt. of Assam", meta_style)],
-        [safe_paragraph("<b>Lead Applicant:</b> Ron Hatibaruah", meta_style), safe_paragraph("<b>Format:</b> Official Proposal Submission (PDF < 10 MB)", meta_style)],
-        [safe_paragraph("<b>Live Prototype:</b> https://krishidrishti-assam.pages.dev/", meta_style), safe_paragraph("<b>Technical Partners:</b> ASAMB & AAU Jorhat AMIU", meta_style)]
+        [safe_paragraph("<b>Proposed Solution Name:</b> KrishiDrishti (Assam Agri-Price Sentinel)", meta_style), 
+         safe_paragraph("<b>Challenge ID:</b> NESFIC-D-35 (Govt Department Track)", meta_style)],
+        [safe_paragraph("<b>Department:</b> Department of Agriculture, Govt. of Assam", meta_style), 
+         safe_paragraph("<b>Technical Synergy:</b> ASAMB & AAU Jorhat AMIU", meta_style)],
+        [safe_paragraph("<b>Lead Applicant:</b> Ron Hatibaruah", meta_style), 
+         safe_paragraph("<b>Format:</b> Uniform Solution Proposal (USPR PDF)", meta_style)],
+        [safe_paragraph("<b>Live Prototype URL:</b> https://krishidrishti-assam.pages.dev/", meta_style), 
+         safe_paragraph("<b>State Command Demo:</b> admin@agri.assam.gov.in / dispur2026", meta_style)],
+        [safe_paragraph("<b>GitHub Repository:</b> https://github.com/RonHatibaruah/krishidrishti-assam", meta_style),
+         safe_paragraph("<b>Target Jurisdiction:</b> All 35 Districts of Assam", meta_style)]
     ]
-    t_meta = Table(meta_data, colWidths=[240, 264])
+    t_meta = Table(meta_data, colWidths=[245, 259])
     t_meta.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f0fdf4')),
         ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#86efac')),
-        ('PADDING', (0,0), (-1,-1), 5),
+        ('PADDING', (0,0), (-1,-1), 4.5),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
     ]))
     story.append(t_meta)
@@ -437,17 +464,23 @@ def build_proposal_pdf(output_path):
     with open(prop_md) as f:
         content = f.read()
 
-    sections = content.split('## ')
-    if sections[0].strip():
-        story.extend(parse_markdown_content(sections[0].strip().split('\n'), available_width=490))
+    # Split strictly on '## Field X:' boundaries to keep internal ### and #### headings intact
+    sections = re.split(r'\n(?=##\s+Field\s+\d+:)', content)
 
-    for sec in sections[1:]:
+    # First section contains metadata; skip duplicate title and parse any intro text
+    if sections and not sections[0].startswith('## Field'):
+        intro_lines = [l for l in sections[0].strip().split('\n') if not l.startswith('# ')]
+        if intro_lines:
+            story.extend(parse_markdown_content(intro_lines, available_width=490))
+        sections = sections[1:]
+
+    for sec in sections:
         lines = sec.strip().split('\n')
-        sec_title = lines[0].strip()
+        sec_title = lines[0].strip().lstrip('#').strip()
         story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#0f766e'), spaceBefore=8, spaceAfter=5))
         story.append(safe_paragraph(sec_title, h2_style))
 
-        # Strategic 16:9 Architectural Diagrams for Each Official Proposal Field
+        # Strategic 16:9 Architectural Diagrams
         if 'Field 1:' in sec_title:
             img = os.path.join(img_dir, 'diagram_1_before_after_workflow.jpg')
             story.extend(create_figure_flowable(img, "Paradigm Shift: Status Quo Mandi Distress Sale vs. KrishiDrishti AI Sentinel Decision Architecture"))
@@ -468,7 +501,7 @@ def build_proposal_pdf(output_path):
             story.extend(create_figure_flowable(img, "Last-Mile Grassroots Delivery: Multilingual WhatsApp Bot (Assamese/Bengali) & Voice IVR Interface for Smallholders"))
         elif 'Field 7:' in sec_title:
             img = os.path.join(img_dir, 'diagram_7_roadmap_and_budget.jpg')
-            story.extend(create_figure_flowable(img, "Assam 35-District Phased Implementation Roadmap (24 Months) & Transparent ₹1.45 Cr Commercialization Budget"))
+            story.extend(create_figure_flowable(img, "Assam 35-District Phased Implementation Roadmap (24 Months) & Transparent Rs. 1.45 Cr Commercialization Budget"))
 
         body_flowables = parse_markdown_content(lines[1:], available_width=490)
         story.extend(body_flowables)
@@ -505,19 +538,27 @@ def build_proof_of_work_pdf(output_path):
 
     story = []
     story.append(safe_paragraph("PROOF OF WORK & SOLUTION EVIDENCE DOSSIER", title_style))
-    story.append(safe_paragraph("KrishiDrishti (Assam Agri-Price Sentinel) — AI Multi-Horizon Commodity Intelligence", subtitle_style))
-    story.append(safe_paragraph("<b>Empirical TFT Benchmarks, Spatial Mandi Arbitrage & Farmer Decision Protocols</b>", subtitle_style))
+    story.append(safe_paragraph("<b>Proposed Solution Name:</b> KrishiDrishti (Assam Agri-Price Sentinel) — AI Multi-Horizon Commodity Intelligence", subtitle_style))
+    story.append(safe_paragraph("Empirical TFT Benchmarks, Spatial Mandi Arbitrage & Farmer Decision Protocols", subtitle_style))
 
+    # Prominent Official Proof of Work Metadata Box
     meta_data = [
-        [safe_paragraph("<b>Challenge ID:</b> NESFIC-D-35 (Govt Track)", meta_style), safe_paragraph("<b>Department:</b> Department of Agriculture, Govt. of Assam", meta_style)],
-        [safe_paragraph("<b>Lead Applicant:</b> Ron Hatibaruah", meta_style), safe_paragraph("<b>Format:</b> Solution Evidence (PDF < 10 MB)", meta_style)],
-        [safe_paragraph("<b>Live Prototype:</b> https://krishidrishti-assam.pages.dev/", meta_style), safe_paragraph("<b>Verification Status:</b> Fully Built & Benchmarked", meta_style)]
+        [safe_paragraph("<b>Proposed Solution Name:</b> KrishiDrishti (Assam Agri-Price Sentinel)", meta_style), 
+         safe_paragraph("<b>Challenge ID:</b> NESFIC-D-35 (Govt Department Track)", meta_style)],
+        [safe_paragraph("<b>Department:</b> Department of Agriculture, Govt. of Assam", meta_style), 
+         safe_paragraph("<b>Verification Status:</b> Fully Built & Empirically Benchmarked", meta_style)],
+        [safe_paragraph("<b>Lead Applicant:</b> Ron Hatibaruah", meta_style), 
+         safe_paragraph("<b>Format:</b> Solution Evidence Dossier (PoW PDF)", meta_style)],
+        [safe_paragraph("<b>Live Prototype URL:</b> https://krishidrishti-assam.pages.dev/", meta_style), 
+         safe_paragraph("<b>State Command Demo:</b> admin@agri.assam.gov.in / dispur2026", meta_style)],
+        [safe_paragraph("<b>GitHub Repository:</b> https://github.com/RonHatibaruah/krishidrishti-assam", meta_style),
+         safe_paragraph("<b>Evaluation Target:</b> NESFIC 2026 Stream 1", meta_style)]
     ]
-    t_meta = Table(meta_data, colWidths=[240, 264])
+    t_meta = Table(meta_data, colWidths=[245, 259])
     t_meta.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f0fdf4')),
         ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#86efac')),
-        ('PADDING', (0,0), (-1,-1), 5),
+        ('PADDING', (0,0), (-1,-1), 4.5),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
     ]))
     story.append(t_meta)
@@ -527,17 +568,22 @@ def build_proof_of_work_pdf(output_path):
     with open(pow_md) as f:
         content = f.read()
 
-    sections = content.split('## ')
-    if sections[0].strip():
-        story.extend(parse_markdown_content(sections[0].strip().split('\n'), available_width=490))
+    # Split strictly on '## X. ' section boundaries
+    sections = re.split(r'\n(?=##\s+\d+\.\s+)', content)
 
-    for sec in sections[1:]:
+    if sections and not re.match(r'##\s+\d+\.\s+', sections[0].strip()):
+        intro_lines = [l for l in sections[0].strip().split('\n') if not l.startswith('# ')]
+        if intro_lines:
+            story.extend(parse_markdown_content(intro_lines, available_width=490))
+        sections = sections[1:]
+
+    for sec in sections:
         lines = sec.strip().split('\n')
-        sec_title = lines[0].strip()
+        sec_title = lines[0].strip().lstrip('#').strip()
         story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#0f766e'), spaceBefore=8, spaceAfter=5))
         story.append(safe_paragraph(sec_title, h2_style))
 
-        # Real Live UI Prototype Screenshots & Empirical Benchmark Evidence
+        # Real Live UI Prototype Screenshots & Empirical Evidence
         if '1. Executive Summary' in sec_title:
             img = os.path.join(img_dir, 'screenshot_live_executive.jpg')
             story.extend(create_figure_flowable(img, "Live Production Evidence: Statewide Agricultural Executive Command Center (Directorate of Agriculture & ASAMB)"))
