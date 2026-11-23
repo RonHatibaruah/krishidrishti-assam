@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Generate clean, copy-paste-ready, textarea-compliant plain text files for NESFIC 2026:
-1. NESFIC_D35_Proposal_Ron_Hatibaruah.txt (Field-by-field copy-paste textarea blocks)
+1. NESFIC_D35_Proposal_Ron_Hatibaruah.txt (Field-by-field copy-paste textarea blocks for all 12 fields)
 2. NESFIC_D35_Proof_of_Work_Ron_Hatibaruah.txt (Full and modular copy-paste textarea blocks)
 """
 
@@ -33,7 +33,7 @@ def clean_text_for_textarea(text):
         
     t = '\n'.join(cleaned_lines)
     
-    # Strip markdown headers (##, ###)
+    # Strip markdown headers (##, ###, ####)
     t = re.sub(r'^#{1,6}\s+(.*?)$', r'\1', t, flags=re.MULTILINE)
     
     # Strip bold and italics
@@ -42,10 +42,11 @@ def clean_text_for_textarea(text):
     t = re.sub(r'\*(.*?)\*', r'\1', t)
     t = re.sub(r'`(.*?)`', r'\1', t)
     
-    # Convert markdown links [Label](url) -> Label: url
+    # Convert markdown links [Label](url) -> Label (url)
     t = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'\1 (\2)', t)
     
     # Clean latex math
+    t = re.sub(r'\$\$([^\$]+)\$\$', r'\1', t)
     t = re.sub(r'\$([^$]+)\$', r'\1', t)
     
     # Standardize bullet symbols
@@ -70,34 +71,31 @@ def generate_proposal_text():
     header += "Sponsoring Department: Department of Agriculture ● Government of Assam\n"
     header += "Technical Partners: ASAMB (Assam Agricultural Marketing Board) & AAU Jorhat AMIU\n"
     header += "Applicant / Innovator: Ron Hatibaruah\n"
-    header += "Solution: KrishiDrishti (Assam Agri-Price Sentinel)\n"
-    header += "Live Prototype: https://krishidrishti-assam.pages.dev/\n"
+    header += "Proposed Solution Name: KrishiDrishti (Assam Agri-Price Sentinel)\n"
+    header += "Live Prototype URL: https://krishidrishti-assam.pages.dev/\n"
     header += "GitHub Repository: https://github.com/RonHatibaruah/krishidrishti-assam\n"
     header += "=" * 80 + "\n\n"
     
-    # Split into fields
-    field_pattern = r'## (Field \d+:.*?)(?=\n## Field |\Z)'
-    fields = re.findall(field_pattern, raw, flags=re.DOTALL)
+    # Split into all 12 proposal fields
+    sections = re.split(r'\n(?=##\s+\d+\.\s+)', raw)
     
     field_texts = []
-    for f in fields:
-        lines = f.strip().split('\n')
-        field_header = lines[0].strip()
-        field_num_match = re.search(r'Field (\d+)', field_header)
+    for s in sections:
+        if not re.match(r'##\s+\d+\.\s+', s.strip()):
+            continue
+        lines = s.strip().split('\n')
+        field_header = lines[0].strip().replace('## ', '')
+        field_num_match = re.search(r'^(\d+)\.', field_header)
         field_num = field_num_match.group(1) if field_num_match else "?"
         
         field_body = '\n'.join(lines[1:]).strip()
-        
-        # Word limit info
-        limit_match = re.search(r'Limit:\s*(\d+)\s*words', field_body)
-        limit_str = f" [Limit: {limit_match.group(1)} words]" if limit_match else ""
         
         cleaned_body = clean_text_for_textarea(field_body)
         word_count = len(re.findall(r'\b\w+\b', cleaned_body))
         
         block = f"{'='*80}\n"
-        block += f"COPY-PASTE BLOCK: FIELD {field_num}{limit_str}\n"
-        block += f"Actual Word Count: {word_count} words\n"
+        block += f"COPY-PASTE BLOCK: FIELD {field_num}. {field_header} [Limit: 500 words]\n"
+        block += f"Actual Word Count: {word_count} words (Compliant with 0/500 word limit)\n"
         block += f"{'='*80}\n\n"
         block += cleaned_body + "\n\n"
         

@@ -58,7 +58,7 @@ Traditional econometric models (ARIMA, SARIMAX) fail to capture non-linear marke
 Quantile Loss Formulation
 Rather than optimizing for Mean Squared Error (which produces a single deterministic point estimate), KrishiDrishti optimizes across multiple quantiles q \in \{0.10, 0.50, 0.90\} using the Pinball Loss function:
 
-$\mathcal{L}_q(y, \hat{y}_q) = \max \Big( q(y - \hat{y}_q), (1 - q)(\hat{y}_q - y) \Big)
+\mathcal{L}_q(y, \hat{y}_q) = \max \Big( q(y - \hat{y}_q), (1 - q)(\hat{y}_q - y) \Big)
 
 For a multi-horizon forecast spanning \tau = 1, \dots, T_{\text{horizon}}, the aggregated multi-quantile objective minimized during backpropagation is:
 
@@ -256,7 +256,7 @@ POST /api/v1/arbitrage/calculate
 6. Security, Compliance & Data Sovereignty
 
 1. State Data Sovereignty (ASDC): All telemetry, predictive weights, and farmer demographic profiles reside exclusively within the Assam State Data Centre in Guwahati.
-2. DPDP Act 2023 Compliance: Smallholder mobile numbers and geolocation coordinates are stored as irreversible cryptographic hashes (SHA\text{-}256$), ensuring zero personally identifiable data leaks.
+2. DPDP Act 2023 Compliance: Smallholder mobile numbers and geolocation coordinates are stored as irreversible cryptographic hashes (SHA\text{-}256), ensuring zero personally identifiable data leaks.
 3. Auditability & Anti-Tamper Mechanism: Every state procurement intervention directive and price anomaly flag generates an immutable SHA-256 block record linked to the previous transaction hash, guaranteeing complete administrative accountability.
 
 7. Verification & Sign-Off

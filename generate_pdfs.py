@@ -68,7 +68,7 @@ def sanitize_to_reportlab_xml(text):
     t = t.replace('(অসমীয়া)', '(Assamese)')
     t = t.replace('অসমীয়া', 'Assamese')
 
-    # 3. Replace Unicode Rupee symbol (not available in standard Type-1 Helvetica)
+    # 3. Replace Unicode Rupee symbol (not in standard Type-1 Helvetica)
     t = t.replace('₹', 'Rs. ')
 
     # 4. Math symbols & variables
@@ -158,8 +158,8 @@ def create_math_block(math_text, available_width=490):
         formatted = "L<sub>total</sub> = (1 / NT) · ∑<sub>i=1..N</sub> ∑<sub>τ=1..T</sub> ∑<sub>q ∈ {0.1, 0.5, 0.9}</sub> L<sub>q</sub>( y<sub>i, t+τ</sub>, ŷ<sub>i, t+τ</sub><sup>(q)</sup> )"
     elif 'NRV(M_{\\text{dest}})' in mt or 'NRV(M_{dest})' in mt or 'NRV(M_dest)' in mt:
         formatted = "NRV(M<sub>dest</sub>) = P<sub>expected</sub>(M<sub>dest</sub>) · (1 - δ<sub>shrinkage</sub> · Δt) - [ (C<sub>base</sub> + C<sub>km</sub> · D + C<sub>toll</sub>) / Q ] - μ<sub>cess</sub> · P<sub>expected</sub>(M<sub>dest</sub>) - C<sub>handling</sub>"
-    elif 'Price_{\\text{mandi}}' in mt or 'Price_{mandi}' in mt or 'Price_mandi' in mt:
-        formatted = "NRV = Price<sub>mandi</sub> - Transport Cost - Mandi Cess - Transit Shrinkage"
+    elif 'Price_{\\text{mandi}}' in mt or 'Price_{mandi}' in mt or 'Price_mandi' in mt or 'Destination Price' in mt:
+        formatted = "NRV = Destination Price - Freight Cost - APMC Cess - Transit Shrinkage Loss"
     elif 'Recommend Route' in mt or r'\theta_{\text{risk\_premium}}' in mt or 'theta_risk_premium' in mt:
         formatted = "Recommend Route to M<sub>dest</sub> ⇔ NRV(M<sub>dest</sub>) > P(M<sub>origin</sub>) + θ<sub>risk_premium</sub>"
     elif r'\Delta \Pi_{\text{storage}}' in mt or 'Pi_storage' in mt:
@@ -435,7 +435,7 @@ def build_proposal_pdf(output_path):
     story = []
     story.append(safe_paragraph("NESFIC 2026 UNIFORM SOLUTION PROPOSAL (USPR)", title_style))
     story.append(safe_paragraph("<b>Proposed Solution Name:</b> KrishiDrishti (Assam Agri-Price Sentinel) — Agricultural Commodity Price Intelligence & Forecasting", subtitle_style))
-    story.append(safe_paragraph("Official 7-Field Application Dossier for Stream 1 (Government Department Track)", subtitle_style))
+    story.append(safe_paragraph("Official 12-Field Application Dossier for Stream 1 (Government Department Track)", subtitle_style))
 
     # Prominent Official Submission Metadata Box
     meta_data = [
@@ -464,11 +464,11 @@ def build_proposal_pdf(output_path):
     with open(prop_md) as f:
         content = f.read()
 
-    # Split strictly on '## Field X:' boundaries to keep internal ### and #### headings intact
-    sections = re.split(r'\n(?=##\s+Field\s+\d+:)', content)
+    # Split strictly on '## X. ' section boundaries to handle all 12 proposal fields cleanly
+    sections = re.split(r'\n(?=##\s+\d+\.\s+)', content)
 
-    # First section contains metadata; skip duplicate title and parse any intro text
-    if sections and not sections[0].startswith('## Field'):
+    # First section contains metadata header; skip duplicate title and parse any intro text
+    if sections and not re.match(r'##\s+\d+\.\s+', sections[0].strip()):
         intro_lines = [l for l in sections[0].strip().split('\n') if not l.startswith('# ')]
         if intro_lines:
             story.extend(parse_markdown_content(intro_lines, available_width=490))
@@ -480,28 +480,43 @@ def build_proposal_pdf(output_path):
         story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#0f766e'), spaceBefore=8, spaceAfter=5))
         story.append(safe_paragraph(sec_title, h2_style))
 
-        # Strategic 16:9 Architectural Diagrams
-        if 'Field 1:' in sec_title:
+        # Strategic 16:9 Architectural Diagrams & Live Prototype Evidence
+        if '1. Problem understanding' in sec_title:
             img = os.path.join(img_dir, 'diagram_1_before_after_workflow.jpg')
             story.extend(create_figure_flowable(img, "Paradigm Shift: Status Quo Mandi Distress Sale vs. KrishiDrishti AI Sentinel Decision Architecture"))
-        elif 'Field 2:' in sec_title:
+        elif '2. Proposed solution' in sec_title:
             img = os.path.join(img_dir, 'diagram_3_ml_forecasting_pipeline.jpg')
             story.extend(create_figure_flowable(img, "Temporal Fusion Transformer (TFT) Multi-Horizon Machine Learning Architecture & Exogenous Feature Attention"))
-        elif 'Field 3:' in sec_title:
-            img = os.path.join(img_dir, 'diagram_4_spatial_mandi_arbitrage.jpg')
-            story.extend(create_figure_flowable(img, "Statewide Spatial Mandi Arbitrage Network & Real-Time Net Realizable Value (NRV) Optimization Engine"))
-        elif 'Field 4:' in sec_title:
-            img = os.path.join(img_dir, 'diagram_6_fpo_storage_optimization.jpg')
-            story.extend(create_figure_flowable(img, "Post-Harvest Cold Storage Economics, Breakeven Holding Dynamics & e-NWR Bank Financing Workflow"))
-        elif 'Field 5:' in sec_title:
+        elif '3. Describe User Journey' in sec_title:
+            img = os.path.join(img_dir, 'screenshot_live_executive.jpg')
+            story.extend(create_figure_flowable(img, "Live Production Evidence: Statewide Agricultural Executive Command Center (Directorate of Agriculture & ASAMB)"))
+        elif '4. Technology & solution architecture' in sec_title:
             img = os.path.join(img_dir, 'diagram_2_enterprise_system_architecture.jpg')
             story.extend(create_figure_flowable(img, "Production Enterprise GovTech Cloud Architecture, ASDC Tier-3 Deployment & Sovereign Data Integration"))
-        elif 'Field 6:' in sec_title:
+        elif '5. Development methodology' in sec_title:
+            img = os.path.join(img_dir, 'screenshot_live_forecast.jpg')
+            story.extend(create_figure_flowable(img, "Live Forecasting Console: Interactive Multi-Horizon Price Trajectories with 80% Probabilistic Quantile Bands"))
+        elif '6. Development timeline' in sec_title:
+            img = os.path.join(img_dir, 'screenshot_live_map.jpg')
+            story.extend(create_figure_flowable(img, "Live WebGIS Intelligence: High-Resolution Satellite Map (ESRI World Imagery) with 35km Catchment Buffers & NH Corridors"))
+        elif '7. Data & information requirements' in sec_title:
+            img = os.path.join(img_dir, 'screenshot_live_storage.jpg')
+            story.extend(create_figure_flowable(img, "Live Infrastructure Hub: WDRA Cold Storage Capacity Tracking & Electronic Negotiable Warehouse Receipt (e-NWR) Calculator"))
+        elif '8. Team, manpower & expertise' in sec_title:
             img = os.path.join(img_dir, 'diagram_5_farmer_multilingual_app.jpg')
             story.extend(create_figure_flowable(img, "Last-Mile Grassroots Delivery: Multilingual WhatsApp Bot (Assamese/Bengali) & Voice IVR Interface for Smallholders"))
-        elif 'Field 7:' in sec_title:
+        elif '9. Testing, validation & evidence' in sec_title:
+            img = os.path.join(img_dir, 'screenshot_live_arbitrage.jpg')
+            story.extend(create_figure_flowable(img, "Live Spatial Arbitrage Engine: Origin-Destination Net Realizable Value (NRV) Breakdown with Route Risk Alerts"))
+        elif '10. Security, privacy' in sec_title:
+            img = os.path.join(img_dir, 'screenshot_live_advisory.jpg')
+            story.extend(create_figure_flowable(img, "Live Grassroots Advisory: Multilingual WhatsApp & Voice Synthesizer Simulation in Assamese and Bengali"))
+        elif '11. Innovation & differentiation' in sec_title:
+            img = os.path.join(img_dir, 'diagram_4_spatial_mandi_arbitrage.jpg')
+            story.extend(create_figure_flowable(img, "Statewide Spatial Mandi Arbitrage Network & Real-Time Net Realizable Value (NRV) Optimization Engine"))
+        elif '12. Resources, risks' in sec_title:
             img = os.path.join(img_dir, 'diagram_7_roadmap_and_budget.jpg')
-            story.extend(create_figure_flowable(img, "Assam 35-District Phased Implementation Roadmap (24 Months) & Transparent Rs. 1.45 Cr Commercialization Budget"))
+            story.extend(create_figure_flowable(img, "Assam 35-District Phased Implementation Roadmap (24 Months) & Transparent Rs. 40.00 Lakh Deep-Tech Budget"))
 
         body_flowables = parse_markdown_content(lines[1:], available_width=490)
         story.extend(body_flowables)
